@@ -34,9 +34,7 @@ def get_model(kwargs: dict) -> torch.nn.Module:
     :return: Module object for model name.
     """
 
-    p, m = kwargs['model_arch_name'].rsplit('.', 1)  # p is module(filename), m is Class Name
-
-    module_name = models.__name__ + '.' + p
+    module_name, m = kwargs['model_arch_name'].rsplit('.', 1)  # p is module(filename), m is Class Name
     module_obj = importlib.import_module(module_name)
     model = getattr(module_obj, m)
     model: torch.nn.Module = model(**kwargs['model_constructor_args'])

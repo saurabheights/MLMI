@@ -11,10 +11,10 @@ import numpy as np
 import torch
 import torch.utils.data
 
-from callbacks.callback_utils import run_callbacks
+from callbacks.callback_utils import run_callbacks, generate_callbacks
 from callbacks.callbacks import CallbackMode, Callbacks
 from dataset.BaseDataset import BaseDataset
-from dataset.factory import create_dataset, SupportedDataset, MAP_DATASET_TO_ENUM
+from dataset.factory import create_dataset, MAP_DATASET_TO_ENUM
 from loss.utils import create_loss
 from models.utils import get_model
 from optimizer.utils import create_optimizer
@@ -27,7 +27,7 @@ from utils.tensorboard_writer import initialize_tensorboard, close_tensorboard
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epoch', type=int, default=50,
                     help='Number of epochs for training. Default 50.')
-parser.add_argument('--dataset', type=str, default='MNIST', choices=['CIFAR10', 'MNIST'],
+parser.add_argument('--dataset', type=str, default='CELEBA', choices=['CIFAR10', 'MNIST', 'CELEBA'],
                     help='Required - The dataset to choose')
 
 # Data Inflation Study, allows training on smaller subset of selected Dataset
@@ -41,18 +41,6 @@ parser.add_argument('--output_dir', type=str, required=False, default='./logs/',
                     help='Optional - Output directory path')
 
 opt = parser.parse_args()
-
-
-def generate_callbacks(arguments: dict,
-                       dataset: BaseDataset,
-                       device,
-                       outdir) -> List[Callbacks]:
-    callbacks = []
-    """
-    Create and add all callbacks instances to `callbacks` list 
-    """
-
-    return callbacks
 
 
 def objective(arguments):
@@ -198,6 +186,30 @@ def objective(arguments):
 
 
 def main():
+    dataset_specific_configs = dict(
+        CIFAR10=dict(
+            training_batch_size=64,
+        ),
+        MNIST=dict(
+            training_batch_size=64,
+        ),
+        CELEBA=dict(
+            training_batch_size=64,
+            # Size of z latent vector (i.e. size of generator input)
+            nz=100,
+            random_seed=999,
+            # Size of feature maps in generator
+            ngf=64,
+            # Size of feature maps in discriminator
+            ndf=64,
+            lr=0.0002,
+            beta1=0.5
+        ),
+    )
+
+    assert opt.dataset in dataset_specific_configs.keys()
+    dataset_specific_config = dataset_specific_configs[opt.dataset]
+
     dataset_args = dict(
         name=MAP_DATASET_TO_ENUM[opt.dataset],
         training_subset_percentage=opt.training_subset_percentage,
@@ -205,7 +217,7 @@ def main():
     )
 
     train_data_args = dict(
-        batch_size=64,
+        batch_size=dataset_specific_config['training_batch_size'],
         shuffle=True,
         to_train=True,
     )
@@ -245,7 +257,7 @@ def main():
         optimizer_args=optimizer_args,
         outdir=opt.output_dir,
         nb_epochs=opt.num_epoch,
-        random_seed=42
+        random_seed=dataset_specific_config.get('random_seed', 42)
     )
 
     try:
