@@ -10,7 +10,6 @@ from utils.sysutils import get_cores_count
 class BaseDataset:
 
     def __init__(self, train_data_args, val_data_args):
-        self.cpu_count = get_cores_count()
         self.train_data_args = train_data_args
         self.val_data_args = val_data_args
 
@@ -34,7 +33,7 @@ class BaseDataset:
                                            batch_size=self.train_data_args['batch_size'],
                                            shuffle=self.train_data_args['shuffle'],
                                            pin_memory=True,
-                                           num_workers=self.cpu_count)
+                                           num_workers=get_cores_count())
 
     @property
     def validation_dataloader(self) -> DataLoader:
@@ -42,7 +41,7 @@ class BaseDataset:
                                            batch_size=self.train_data_args['batch_size'],
                                            shuffle=self.train_data_args['shuffle'],
                                            pin_memory=True,
-                                           num_workers=self.cpu_count)
+                                           num_workers=get_cores_count())
 
     @property
     def test_dataloader(self):
@@ -50,7 +49,7 @@ class BaseDataset:
                                            batch_size=self.val_data_args['batch_size'],
                                            shuffle=self.val_data_args['shuffle'],
                                            pin_memory=True,
-                                           num_workers=self.cpu_count)
+                                           num_workers=get_cores_count())
 
     @property
     def get_train_dataset_size(self):
