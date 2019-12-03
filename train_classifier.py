@@ -230,7 +230,7 @@ def main():
 
     model_args = dict(
         # Use Enums here
-        model_arch_name='classification.ConvNetSimple.ConvNetSimple',
+        model_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
         model_weights_path=opt.model_weights,
         model_constructor_args=dict(
             input_size=dataset_args['name'].value['image_size'],
@@ -257,7 +257,8 @@ def main():
         optimizer_args=optimizer_args,
         outdir=opt.output_dir,
         nb_epochs=opt.num_epoch,
-        random_seed=dataset_specific_config.get('random_seed', 42)
+        random_seed=dataset_specific_config.get('random_seed', 42),
+        mode='classification'
     )
 
     try:
