@@ -2,6 +2,7 @@
 from typing import List
 
 from callbacks.callbacks import Callbacks, CallbackMode
+from dataset.BaseDataset import BaseDataset
 
 
 def run_callbacks(callbacks: List[Callbacks],
@@ -20,3 +21,15 @@ def run_callbacks(callbacks: List[Callbacks],
             callback.on_train_end()
         else:
             raise ValueError('Unknown mode value')
+
+
+def generate_callbacks(arguments: dict,
+                       dataset: BaseDataset,
+                       device,
+                       outdir) -> List[Callbacks]:
+    callbacks = []
+    """
+    Create and add all callbacks instances to `callbacks` list 
+    """
+
+    return callbacks
