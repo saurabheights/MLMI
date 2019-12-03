@@ -1,0 +1,74 @@
+2019-12-03 22:52:33,102 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():54                | Arguments:
+{'dataset_args': {'name': <SupportedDataset.MNIST_Enum: {'dataloader': <class 'dataset.MNIST.MNIST'>, 'image_size': (28, 28), 'channels': 1, 'training_size': 60000, 'labels_count': 10}>,
+                  'training_subset_percentage': 1.0},
+ 'loss_args': {'name': 'torch.nn.CrossEntropyLoss'},
+ 'mode': 'classification',
+ 'model_args': {'model_arch_name': 'models.classification.ConvNetSimple.ConvNetSimple',
+                'model_constructor_args': {'input_size': (28, 28),
+                                           'number_of_classes': 10,
+                                           'number_of_input_channels': 1},
+                'model_weights_path': None},
+ 'nb_epochs': 50,
+ 'optimizer_args': {'lr': 0.001, 'name': 'torch.optim.Adam'},
+ 'outdir': './logs/',
+ 'random_seed': 42,
+ 'train_data_args': {'batch_size': 64, 'shuffle': True, 'to_train': True},
+ 'val_data_args': {'batch_size': 256,
+                   'shuffle': False,
+                   'validate_step_size': 1}}
+2019-12-03 22:52:33,102 |     MainProcess | MainThread | INFO  | tensorboard_writer.py::initialize_tensorboard():64 | Initializing Tensorboard Writer in ./logs/2019-12-03T22:52:33.058070_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001
+2019-12-03 22:52:33,104 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():60                | Using Random Seed value as: 42
+2019-12-03 22:52:33,119 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():67                | Using device - cuda:0
+2019-12-03 22:52:36,287 |     MainProcess | MainThread | INFO  | MNIST.py::__init__():32                            | Mean and Std used: (0.5,), (0.5,)
+2019-12-03 22:52:49,247 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.15184815184816 %%
+2019-12-03 22:53:00,800 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.38494838494839 %%
+2019-12-03 22:53:14,529 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.7012987012987 %%
+2019-12-03 22:53:27,547 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.73459873459873 %%
+2019-12-03 22:53:43,500 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.86779886779887 %%
+2019-12-03 22:53:59,438 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.91774891774892 %%
+2019-12-03 22:54:16,752 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.88444888444889 %%
+2019-12-03 22:54:31,335 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.06759906759906 %%
+2019-12-03 22:54:47,301 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.05094905094906 %%
+2019-12-03 22:55:01,661 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.16749916749917 %%
+2019-12-03 22:55:17,717 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.15084915084915 %%
+2019-12-03 22:55:32,919 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.98434898434898 %%
+2019-12-03 22:55:47,843 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.05094905094906 %%
+2019-12-03 22:56:03,329 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.91774891774892 %%
+2019-12-03 22:56:17,939 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.16749916749917 %%
+2019-12-03 22:56:34,492 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.06759906759906 %%
+2019-12-03 22:56:49,516 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.08424908424908 %%
+2019-12-03 22:57:03,510 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.11754911754912 %%
+2019-12-03 22:57:17,414 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.11754911754912 %%
+2019-12-03 22:57:33,478 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.2007992007992 %%
+2019-12-03 22:57:48,098 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.06759906759906 %%
+2019-12-03 22:58:02,630 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.13419913419914 %%
+2019-12-03 22:58:14,500 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.03429903429904 %%
+2019-12-03 22:58:25,949 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.76789876789877 %%
+2019-12-03 22:58:40,586 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.16749916749917 %%
+2019-12-03 22:58:57,433 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.01764901764902 %%
+2019-12-03 22:59:13,535 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.93439893439893 %%
+2019-12-03 22:59:30,238 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.1008991008991 %%
+2019-12-03 22:59:45,758 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.86779886779887 %%
+2019-12-03 23:00:00,012 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.98434898434898 %%
+2019-12-03 23:00:13,126 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.03429903429904 %%
+2019-12-03 23:00:27,606 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.11754911754912 %%
+2019-12-03 23:00:42,347 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.2007992007992 %%
+2019-12-03 23:00:53,904 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.1008991008991 %%
+2019-12-03 23:01:05,299 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.96769896769896 %%
+2019-12-03 23:01:17,184 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.91774891774892 %%
+2019-12-03 23:01:31,822 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.03429903429904 %%
+2019-12-03 23:01:45,820 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.08424908424908 %%
+2019-12-03 23:02:01,185 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.23409923409923 %%
+2019-12-03 23:02:14,895 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.05094905094906 %%
+2019-12-03 23:02:29,373 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.88444888444889 %%
+2019-12-03 23:02:44,610 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.13419913419914 %%
+2019-12-03 23:02:57,413 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.9010989010989 %%
+2019-12-03 23:03:14,278 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.96769896769896 %%
+2019-12-03 23:03:33,127 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.000999000999 %%
+2019-12-03 23:03:50,535 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.9010989010989 %%
+2019-12-03 23:04:04,373 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.000999000999 %%
+2019-12-03 23:04:16,197 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.85114885114885 %%
+2019-12-03 23:04:28,536 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 98.96769896769896 %%
+2019-12-03 23:04:41,858 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():166               | Accuracy of the network on the 6006 validation images: 99.05094905094906 %%
+2019-12-03 23:04:41,858 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():182               | Finished Training
+2019-12-03 23:04:41,858 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():184               | Max Validation accuracy is 99.23409923409923
