@@ -25,21 +25,24 @@ class MNIST(BaseDataset):
 
         dataset_dir = './data/' + self.__class__.__name__
 
-        # ToDo - Fix mean and std.
-        mean = (0.5, )
-        std = (0.5, )
-        self.__normalize_transform = torchvision.transforms.Compose(
+        self.mean = (0, )
+        self.std = (1, )
+
+        self.demean = [-m / s for m, s in zip(self.mean, self.std)]
+        self.destd = [1 / s for s in self.std]
+
+        self.normalize_transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
-             torchvision.transforms.Normalize(mean, std)])
+             torchvision.transforms.Normalize(self.mean, self.std)])
 
         # Normalization transform does (x - mean) / std
         # To denormalize use mean* = (-mean/std) and std* = (1/std)
-        self.denormalization_transform = torchvision.transforms.Normalize((-1, ), (2,))
+        self.denormalization_transform = torchvision.transforms.Normalize(self.demean, self.destd)
 
         self.original_training_set = torchvision.datasets.MNIST(root=dataset_dir,
                                                                 train=True,
                                                                 download=True,
-                                                                transform=self.__normalize_transform)
+                                                                transform=self.normalize_transform)
 
         # Split train data into training and cross validation dataset using 9:1 split ration
         split_ratio = 0.9
@@ -53,7 +56,7 @@ class MNIST(BaseDataset):
         self.testset = torchvision.datasets.MNIST(root=dataset_dir,
                                                   train=False,
                                                   download=True,
-                                                  transform=self.__normalize_transform)
+                                                  transform=self.normalize_transform)
 
     def debug(self):
         # get some random training images
