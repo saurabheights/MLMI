@@ -1,5 +1,6 @@
 from enum import Enum
 
+from dataset.CELEBA import CELEBA
 from dataset.CIFAR10 import CIFAR10
 from dataset.MNIST import MNIST
 
@@ -21,10 +22,19 @@ class SupportedDataset(Enum):
         labels_count=10
     )
 
+    CELEBA_Enum = dict(
+        dataloader=CELEBA,
+        image_size=(64, 64),
+        channels=3,
+        training_size=60000,
+        labels_count=10
+    )
+
 
 MAP_DATASET_TO_ENUM = dict(
     CIFAR10=SupportedDataset.CIFAR10_Enum,
     MNIST=SupportedDataset.MNIST_Enum,
+    CELEBA=SupportedDataset.CELEBA_Enum
 )
 
 
