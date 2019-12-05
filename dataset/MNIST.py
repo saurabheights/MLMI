@@ -7,6 +7,7 @@ import torchvision
 from torch.utils.data import DataLoader
 
 from dataset.BaseDataset import BaseDataset
+from utils import logger
 
 
 class MNIST(BaseDataset):
@@ -25,15 +26,15 @@ class MNIST(BaseDataset):
 
         dataset_dir = './data/' + self.__class__.__name__
 
-        self.mean = (0, )
-        self.std = (1, )
+        self.mean = dataset_args.get('mean', (0.5,))
+        self.std = dataset_args.get('std', (0.5,))
+
+        logger.info(f'Mean and Std used: {self.mean}, {self.std}')
 
         self.demean = [-m / s for m, s in zip(self.mean, self.std)]
         self.destd = [1 / s for s in self.std]
 
-        self.normalize_transform = torchvision.transforms.Compose(
-            [torchvision.transforms.ToTensor(),
-             torchvision.transforms.Normalize(self.mean, self.std)])
+        self.normalize_transform = self.get_normalize_transform()
 
         # Normalization transform does (x - mean) / std
         # To denormalize use mean* = (-mean/std) and std* = (1/std)
@@ -68,6 +69,12 @@ class MNIST(BaseDataset):
 
         # print labels
         pprint(' '.join('%s' % self.classes[labels[j]] for j in range(len(images))))
+
+    def get_normalize_transform(self):
+        normalize_transform = torchvision.transforms.Compose(
+            [torchvision.transforms.ToTensor(),
+             torchvision.transforms.Normalize(self.mean, self.std)])
+        return normalize_transform
 
     def denormalize(self, x):
         return self.denormalization_transform(x)

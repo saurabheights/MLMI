@@ -67,6 +67,9 @@ class BaseDataset:
     def classes(self):
         raise NotImplementedError
 
+    def get_normalize_transform(self):
+        raise NotImplementedError
+
     def get_uniform_subset(self, samples_per_label):
         """
         Creates a training subset with fixed number of samples per class.

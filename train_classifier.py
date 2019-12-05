@@ -192,6 +192,8 @@ def main():
         ),
         MNIST=dict(
             training_batch_size=64,
+            mean=(0.5,),
+            std=(0.5,)
         ),
         CELEBA=dict(
             training_batch_size=64,

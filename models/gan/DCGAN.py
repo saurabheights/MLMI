@@ -5,6 +5,7 @@ import torch.nn
 class Generator(torch.nn.Module):
     def __init__(self, z_dim, latent_dim, image_size):
         super().__init__()
+        self.z_dim = z_dim
         X_dim = image_size[0] * image_size[1] * image_size[2]
         # Create the Generator
         self.G = torch.nn.Sequential(

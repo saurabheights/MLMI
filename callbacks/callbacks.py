@@ -7,6 +7,7 @@ class CallbackMode(Enum):
     ON_EPOCH_BEGIN = auto()
     ON_EPOCH_END = auto()
     ON_TRAIN_END = auto()
+    ON_NTH_ITERATION = auto()
 
 
 class Callbacks:
@@ -26,4 +27,12 @@ class Callbacks:
         pass
 
     def on_epoch_end(self, epoch):
+        pass
+
+    def on_nth_iteration(self, iteration):
+        """
+        Useful in for example gan training.
+        :param iteration:
+        :return:
+        """
         pass

@@ -13,8 +13,8 @@ import torch.utils.data
 import torchvision.utils as vutils
 from torch.autograd import Variable
 
-from callbacks.callback_utils import generate_callbacks
-from callbacks.callbacks import Callbacks
+from callbacks.callback_utils import generate_callbacks, run_callbacks
+from callbacks.callbacks import Callbacks, CallbackMode
 from dataset.BaseDataset import BaseDataset
 from dataset.factory import create_dataset, MAP_DATASET_TO_ENUM
 from models.utils import get_model
@@ -25,8 +25,8 @@ from utils.tensorboard_writer import initialize_tensorboard
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--num_iterations', type=int, default=sys.maxsize,
-                    help='Optional - Number of iterations for training gan. Default max  int value.')
+parser.add_argument('--num_iterations', type=int, default=10000,
+                    help='Optional - Number of iterations for training gan. Default value 10000.')
 
 parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR10', 'CELEBA'],
                     help='Optional - The dataset to choose')
@@ -44,15 +44,17 @@ parser.add_argument('--output_dir', type=str, required=False, default='./logs/',
 
 opt = parser.parse_args()
 
+
 def infinite_train_gen(dataloader):
     def f():
         while True:
             for images, targets in dataloader:
                 yield images, targets
+
     return f()
 
-def train_gan(arguments):
 
+def train_gan(arguments):
     """ Setup result directory and enable logging to file in it """
     outdir = make_results_dir(arguments)
     logger.init(outdir, logging.INFO)
@@ -163,6 +165,8 @@ def train_gan(arguments):
 
         # Print and plot every now and then
         if it % 1000 == 0:
+            run_callbacks(callbacks, model=(G, D), mode=CallbackMode.ON_NTH_ITERATION, iteration=it)
+            reset_grad()
             print('Iter-{}; D_loss: {}; G_loss: {}'
                   .format(it,
                           D_loss.data.cpu().item(),
@@ -209,12 +213,20 @@ def train_gan(arguments):
             plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
                                     (1, 2, 0)))
 
+    # ToDo - Save Model at every nth iteration
+
+
 def main():
     dataset_specific_configs = dict(
         MNIST=dict(
             training_batch_size=32,
             z_dim=10,
-            latent_dim = 128
+            latent_dim=128,
+            evaluation_classifier_weights='logs/2019-12-03T22:52:33.058070_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_'
+                                          'name_Adam_lr_0.001/epoch_0038-model-val_accuracy_99.23409923409923.pth',
+            evaluation_size=10000,
+            evaluation_classifier_std=(0.5, ),
+            evaluation_classifier_mean=(0.5, )
         )
     )
 
@@ -224,6 +236,8 @@ def main():
     dataset_args = dict(
         name=MAP_DATASET_TO_ENUM[opt.dataset],
         training_subset_percentage=opt.training_subset_percentage,
+        mean=(0,),
+        std=(1,)
         # For Data Inflation Study - Set to None to use full dataset
     )
 
@@ -243,7 +257,7 @@ def main():
         # Use Enums here
         model_arch_name='models.gan.DCGAN.Generator',
         model_weights_path=os.path.join(opt.model_weights_directory, 'G.pth') if opt.model_weights_directory else None,
-        model_constructor_args=dict(  # ToDo Fix this
+        model_constructor_args=dict(
             latent_dim=dataset_specific_config['latent_dim'],
             z_dim=dataset_specific_config['z_dim'],
             image_size=dataset_args['name'].value['image_size'] + (dataset_args['name'].value['channels'],)
@@ -254,7 +268,7 @@ def main():
         # Use Enums here
         model_arch_name='models.gan.DCGAN.Discriminator',
         model_weights_path=os.path.join(opt.model_weights_directory, 'D.pth') if opt.model_weights_directory else None,
-        model_constructor_args=dict(  # ToDo Fix this
+        model_constructor_args=dict(
             image_size=dataset_args['name'].value['image_size'] + (dataset_args['name'].value['channels'],),
             latent_dim=dataset_specific_config['latent_dim']
         )
@@ -274,6 +288,26 @@ def main():
         lr=1e-4
     )
 
+    callbacks_args = [
+        # dict(SampleSaver=dict(num_samples=8)),
+        dict(InceptionMetric=dict(sample_size=train_data_args['batch_size'],
+                                  total_samples=dataset_specific_config['evaluation_size'],
+                                  classifier_model_args=dict(
+                                      # Use Enums here
+                                      model_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
+                                      model_weights_path=dataset_specific_config['evaluation_classifier_weights'],
+                                      model_constructor_args=dict(
+                                          input_size=dataset_args['name'].value['image_size'],
+                                          number_of_input_channels=dataset_args['name'].value['channels'],
+                                          number_of_classes=dataset_args['name'].value['labels_count'],
+                                      )
+                                  ),
+                                  transform=dict(mean=dataset_specific_config['evaluation_classifier_mean'],
+                                                 std=dataset_specific_config['evaluation_classifier_std']),
+                                  mode='gan')
+             )
+    ]
+
     arguments = dict(
         mode='gan',
         dataset_args=dataset_args,
@@ -284,6 +318,7 @@ def main():
         loss_args=loss_args,
         generator_optimizer_args=generator_optimizer_args,
         discriminator_optimizer_args=discriminator_optimizer_args,
+        callbacks_args=callbacks_args,
         outdir=opt.output_dir,
         num_iterations=opt.num_iterations,
         random_seed=dataset_specific_config.get('random_seed', 42)
@@ -293,6 +328,7 @@ def main():
         train_gan(arguments)
     except Exception as e:
         logger.exception("Exception caught from objective function")
+
 
 if __name__ == '__main__':
     main()
