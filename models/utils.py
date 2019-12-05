@@ -39,5 +39,5 @@ def get_model(kwargs: dict) -> torch.nn.Module:
     model = getattr(module_obj, m)
     model: torch.nn.Module = model(**kwargs['model_constructor_args'])
     if kwargs['model_weights_path'] is not None:
-        model.load_state_dict(torch.load(kwargs['model_weights_path']), strict=False)
+        model.load_state_dict(torch.load(kwargs['model_weights_path'], map_location=torch.device('cpu')), strict=False)
     return model
