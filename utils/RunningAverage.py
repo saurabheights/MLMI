@@ -10,7 +10,7 @@ class RunningAverage:
             removed = self.samples.pop(0)
             self.running_average = (self.running_average * self.max_samples - removed + new_sample) / self.max_samples
         else:
-            self.running_average = (self.running_average * (len(self.samples) - 1) + new_sample) / self.max_samples
+            self.running_average = (self.running_average * (len(self.samples) - 1) + new_sample) / len(self.samples)
         return self.running_average
 
 
