@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import random
-import sys
 from pprint import pformat
 from typing import List
 
@@ -12,6 +11,7 @@ import numpy as np
 import torch.utils.data
 import torchvision.utils as vutils
 from torch.autograd import Variable
+from tqdm import tqdm
 
 from callbacks.callback_utils import generate_callbacks, run_callbacks
 from callbacks.callbacks import Callbacks, CallbackMode
@@ -120,100 +120,105 @@ def train_gan(arguments):
     z_dim = arguments['generator_model_args']['model_constructor_args']['z_dim']
 
     generator = infinite_train_gen(dataset.train_dataloader)
-    for it in range(arguments['num_iterations']):
-        for i in range(5):
-            # Sample data
-            z = Variable(torch.randn(mb_size, z_dim).to(device))
-            x, _ = next(generator)
-            x = Variable(x.to(device))
+    interval_length = 1000
+    num_intervals = int(arguments['num_iterations'] / interval_length)
 
-            # Dicriminator forward-loss-backward-update
-            G_sample = G(z)
-            D_real = D(x)
-            D_fake = D(G_sample)
+    for it in range(num_intervals):
 
-            D_loss = -(torch.mean(D_real) - torch.mean(D_fake))
-            if i == 4:
-                D_losses.append(D_loss.item())
+        logger.info(f'Interval {it+1}/{num_intervals}')
 
-            D_loss.backward()
-            D_optimizer.step()
+        for _ in tqdm(range(interval_length)):
+            D_loss, G_loss, z = train_iter(D, D_optimizer, G, G_optimizer, device,
+                                           generator, mb_size, reset_grad, z_dim)
+            G_losses.append(G_loss.item())
+            D_losses.append(D_loss.item())
 
-            # Weight clipping
-            for p in D.parameters():
-                p.data.clamp_(-0.01, 0.01)
 
-            # Housekeeping - reset gradient
-            reset_grad()
+        run_callbacks(callbacks, model=(G, D), mode=CallbackMode.ON_NTH_ITERATION, iteration=it)
+        reset_grad()
+        print('Iter-{}; D_loss: {}; G_loss: {}'
+              .format(it,
+                      D_loss.data.cpu().item(),
+                      G_loss.data.cpu().item()))
 
-        # Generator forward-loss-backward-update
+        samples = G(z).data.cpu().numpy()[:64]
+
+        fig = plt.figure(figsize=(8, 8))  #ToDo Use Pytorch grid method
+        gs = gridspec.GridSpec(8, 8)
+        gs.update(wspace=0.05, hspace=0.05)
+
+        for i, sample in enumerate(samples):
+            ax = plt.subplot(gs[i])
+            plt.axis('off')
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
+            ax.set_aspect('equal')
+            plt.imshow(sample.reshape(28, 28), cmap='Greys_r')  # ToDo: Hardcoded Image Size
+
+        if not os.path.exists('out/'):
+            os.makedirs('out/')
+
+        plt.title("Fake Images")
+        plt.show()
+        plt.savefig('out/{}.png'.format(str(cnt).zfill(3)), bbox_inches='tight')
+        cnt += 1
+        plt.close(fig)
+        plt.figure(figsize=(10, 5))
+        plt.title("Generator and Discriminator Loss During Training")
+        plt.plot(G_losses, label="G")
+        plt.plot(D_losses, label="D")
+        plt.xlabel("iterations")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.show()
+
+        real_batch = next(generator)
+
+        # Plot the real images
+        plt.figure(figsize=(15, 15))
+        plt.subplot(1, 2, 1)
+        plt.axis("off")
+        plt.title("Real Images")
+        plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
+                                (1, 2, 0)))
+
+        # ToDo - Save Model at every nth iteration
+
+
+def train_iter(D, D_optimizer, G, G_optimizer, device, generator, mb_size, reset_grad, z_dim):
+    for i in range(5):
+        # Sample data
+        z = torch.randn(mb_size, z_dim).to(device)
         x, _ = next(generator)
-        x = Variable(x).to(device)
-        z = Variable(torch.randn(mb_size, z_dim)).to(device)
+        x = x.to(device)
 
+        # Dicriminator forward-loss-backward-update
         G_sample = G(z)
+        D_real = D(x)
         D_fake = D(G_sample)
 
-        G_loss = -torch.mean(D_fake)
-        G_losses.append(G_loss.item())
+        D_loss = -(torch.mean(D_real) - torch.mean(D_fake))
 
-        G_loss.backward()
-        G_optimizer.step()
+        D_loss.backward()
+        D_optimizer.step()
+
+        # Weight clipping
+        for p in D.parameters():
+            p.data.clamp_(-0.01, 0.01)
 
         # Housekeeping - reset gradient
         reset_grad()
 
-        # Print and plot every now and then
-        if it % 1000 == 0:
-            run_callbacks(callbacks, model=(G, D), mode=CallbackMode.ON_NTH_ITERATION, iteration=it)
-            reset_grad()
-            print('Iter-{}; D_loss: {}; G_loss: {}'
-                  .format(it,
-                          D_loss.data.cpu().item(),
-                          G_loss.data.cpu().item()))
-
-            samples = G(z).data.cpu().numpy()[:64]
-
-            fig = plt.figure(figsize=(8, 8))  #ToDo Use Pytorch grid method
-            gs = gridspec.GridSpec(8, 8)
-            gs.update(wspace=0.05, hspace=0.05)
-
-            for i, sample in enumerate(samples):
-                ax = plt.subplot(gs[i])
-                plt.axis('off')
-                ax.set_xticklabels([])
-                ax.set_yticklabels([])
-                ax.set_aspect('equal')
-                plt.imshow(sample.reshape(28, 28), cmap='Greys_r')
-
-            if not os.path.exists('out/'):
-                os.makedirs('out/')
-
-            plt.title("Fake Images")
-            plt.show()
-            plt.savefig('out/{}.png'.format(str(cnt).zfill(3)), bbox_inches='tight')
-            cnt += 1
-            plt.close(fig)
-            plt.figure(figsize=(10, 5))
-            plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(G_losses, label="G")
-            plt.plot(D_losses, label="D")
-            plt.xlabel("iterations")
-            plt.ylabel("Loss")
-            plt.legend()
-            plt.show()
-
-            real_batch = next(generator)
-
-            # Plot the real images
-            plt.figure(figsize=(15, 15))
-            plt.subplot(1, 2, 1)
-            plt.axis("off")
-            plt.title("Real Images")
-            plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
-                                    (1, 2, 0)))
-
-    # ToDo - Save Model at every nth iteration
+    # Generator forward-loss-backward-update
+    z = torch.randn(mb_size, z_dim).to(device)
+    G_sample = G(z)
+    D_fake = D(G_sample)
+    G_loss = -torch.mean(D_fake)
+    G_loss.backward()
+    G_optimizer.step()
+    # Housekeeping - reset gradient
+    reset_grad()
+    return D_loss, G_loss, z
 
 
 def main():
