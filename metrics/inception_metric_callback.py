@@ -29,8 +29,8 @@ class InceptionScoreCallback(Callbacks):
                  outdir,
                  mode='gan',
                  device=None,
-                 batch_size = None,
-                 total_samples = None,
+                 batch_size=None,
+                 total_samples=None,
                  transform=None,
                  dataset: BaseDataset = None):
         super().__init__()
@@ -64,7 +64,7 @@ class InceptionScoreCallback(Callbacks):
         generator = self.model[0]
         noise = torch.randn(self.batch_size, generator.z_dim, device=self.device)
         img = generator(noise).detach()
-        score = self.calculate_score(self.transform(img).to(self.device))
+        score = self.calculate_score(self.classifier(self.transform(img).to(self.device)))
         return score
 
     def calculate_score(self, x):
