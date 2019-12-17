@@ -17,6 +17,9 @@ class Callbacks:
     def set_model(self, model):
         self.model = model
 
+    def set_optimizer(self, optimizer):
+        self.optimizer = optimizer
+
     def on_train_begin(self):
         pass
 

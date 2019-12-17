@@ -5,12 +5,8 @@ import random
 from pprint import pformat
 from typing import List
 
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
 import numpy as np
 import torch.utils.data
-import torchvision.utils as vutils
-from torch.autograd import Variable
 from tqdm import tqdm
 
 from callbacks.callback_utils import generate_callbacks, run_callbacks
@@ -24,6 +20,9 @@ from utils.fileutils import make_results_dir
 from utils.tensorboard_writer import initialize_tensorboard
 
 parser = argparse.ArgumentParser()
+
+parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp'],
+                    help='Optional - To train dcgan or wgan. Default value dcgan.')
 
 parser.add_argument('--num_iterations', type=int, default=10000,
                     help='Optional - Number of iterations for training gan. Default value 10000.')
@@ -81,6 +80,9 @@ def train_gan(arguments):
     G_optimizer = create_optimizer(G.parameters(), arguments['generator_optimizer_args'])
     D_optimizer = create_optimizer(D.parameters(), arguments['discriminator_optimizer_args'])
 
+    """ Create Loss """
+    loss = torch.nn.BCELoss().to(device=device)  # GAN
+
     """ Load parameters for the Dataset """
     dataset: BaseDataset = create_dataset(arguments['dataset_args'],
                                           arguments['train_data_args'],
@@ -111,84 +113,102 @@ def train_gan(arguments):
         D.zero_grad()
 
     # Lists to keep track of progress
-    img_list = []
     G_losses = []
     D_losses = []
-    cnt = 0
 
     mb_size = arguments['train_data_args']['batch_size']
     z_dim = arguments['generator_model_args']['model_constructor_args']['z_dim']
 
     generator = infinite_train_gen(dataset.train_dataloader)
-    interval_length = 1000
+    interval_length = 400
     num_intervals = int(arguments['num_iterations'] / interval_length)
 
+    global_step = 0
     for it in range(num_intervals):
 
-        logger.info(f'Interval {it+1}/{num_intervals}')
+        logger.info(f'Interval {it + 1}/{num_intervals}')
+
+        # Set model in train mode
+        G.train()
+        D.train()
 
         for _ in tqdm(range(interval_length)):
-            D_loss, G_loss, z = train_iter(D, D_optimizer, G, G_optimizer, device,
-                                           generator, mb_size, reset_grad, z_dim)
-            G_losses.append(G_loss.item())
-            D_losses.append(D_loss.item())
+            if arguments['mode'] == 'dcgan':
+                D_loss, G_loss = train_gan_iter(D, D_optimizer, G, G_optimizer,
+                                                loss, device, generator, mb_size, reset_grad, z_dim)
+            elif arguments['mode'] == 'wgan-wp':
+                D_loss, G_loss = train_wgan_iter(D, D_optimizer, G, G_optimizer, device,
+                                                 generator, mb_size, reset_grad, z_dim)
 
+            if global_step % 10 == 0:
+                print(f'\nDiscriminator Loss: {D_loss.data.cpu().item()}, Generator Loss: {G_loss.data.cpu().item()}\n')
 
-        run_callbacks(callbacks, model=(G, D), mode=CallbackMode.ON_NTH_ITERATION, iteration=it)
+            # Save Loss In Tensorboard
+            tensorboard_writer.save_scalars(f'{arguments["mode"].upper()}_Loss',
+                                            {
+                                                'Discriminator' if arguments['mode'] == 'dcgan' else
+                                                'Critic': D_loss.data.cpu().item(),
+                                                'Generator': G_loss.data.cpu().item()},
+                                            global_step)
+            global_step += 1
+
+        print(f'Discriminator Loss: {D_loss.data.cpu().item()}, Generator Loss: {G_loss.data.cpu().item()}')
+
+        run_callbacks(callbacks,
+                      model=(G, D),
+                      optimizer=(G_optimizer, D_optimizer),  # To Save optimizer dict for retraining.
+                      mode=CallbackMode.ON_NTH_ITERATION, iteration=global_step)
         reset_grad()
-        print('Iter-{}; D_loss: {}; G_loss: {}'
-              .format(it,
-                      D_loss.data.cpu().item(),
-                      G_loss.data.cpu().item()))
-
-        samples = G(z).data.cpu().numpy()[:64]
-
-        fig = plt.figure(figsize=(8, 8))  #ToDo Use Pytorch grid method
-        gs = gridspec.GridSpec(8, 8)
-        gs.update(wspace=0.05, hspace=0.05)
-
-        for i, sample in enumerate(samples):
-            ax = plt.subplot(gs[i])
-            plt.axis('off')
-            ax.set_xticklabels([])
-            ax.set_yticklabels([])
-            ax.set_aspect('equal')
-            plt.imshow(sample.reshape(28, 28), cmap='Greys_r')  # ToDo: Hardcoded Image Size
-
-        if not os.path.exists('out/'):
-            os.makedirs('out/')
-
-        plt.title("Fake Images")
-        plt.show()
-        plt.savefig('out/{}.png'.format(str(cnt).zfill(3)), bbox_inches='tight')
-        cnt += 1
-        plt.close(fig)
-        plt.figure(figsize=(10, 5))
-        plt.title("Generator and Discriminator Loss During Training")
-        plt.plot(G_losses, label="G")
-        plt.plot(D_losses, label="D")
-        plt.xlabel("iterations")
-        plt.ylabel("Loss")
-        plt.legend()
-        plt.show()
-
-        real_batch = next(generator)
-
-        # Plot the real images
-        plt.figure(figsize=(15, 15))
-        plt.subplot(1, 2, 1)
-        plt.axis("off")
-        plt.title("Real Images")
-        plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
-                                (1, 2, 0)))
-
-        # ToDo - Save Model at every nth iteration
 
 
-def train_iter(D, D_optimizer, G, G_optimizer, device, generator, mb_size, reset_grad, z_dim):
-    for i in range(5):
+def train_gan_iter(D, D_optimizer, G, G_optimizer,
+                   loss, device, generator, mb_size, reset_grad, z_dim):
+    real_labels = torch.ones(mb_size).to(device)
+    fake_labels = torch.zeros(mb_size).to(device)
+
+    # Train discriminator
+    # Compute BCE_Loss using real images
+    images, _ = next(generator)
+    images = images.to(device)
+    outputs = D(images)
+    D_loss_real = loss(outputs.squeeze(), real_labels)
+
+    # Compute BCE Loss using fake images
+    z = torch.rand((mb_size, z_dim, 1, 1), device=device)
+    fake_images = G(z)
+    outputs = D(fake_images)
+    D_loss_fake = loss(outputs.squeeze(), fake_labels)
+
+    # Optimize discriminator
+    D_loss = D_loss_real + D_loss_fake
+    D.zero_grad()
+    # if D_loss > 0.01:  # Dont make discriminator too strong.
+    D_loss.backward()
+    D_optimizer.step()
+    reset_grad()
+
+    # Train generator
+    # Compute loss with fake images
+    z = torch.rand((mb_size, z_dim, 1, 1), device=device)
+    fake_images = G(z)
+    outputs = D(fake_images)
+    G_loss = loss(outputs.squeeze(), real_labels)
+
+    # Optimize generator
+    G_loss.backward()
+    G_optimizer.step()
+    reset_grad()
+    return D_loss, G_loss
+
+
+def train_wgan_iter(D, D_optimizer,
+                    G, G_optimizer,
+                    device, generator, mb_size, reset_grad, z_dim, num_critic_iter=5):
+    D_loss = 0
+    assert num_critic_iter >= 5
+    for i in range(num_critic_iter):
         # Sample data
-        z = torch.randn(mb_size, z_dim).to(device)
+        z = torch.randn(mb_size, z_dim, 1, 1, device=device)
         x, _ = next(generator)
         x = x.to(device)
 
@@ -206,32 +226,30 @@ def train_iter(D, D_optimizer, G, G_optimizer, device, generator, mb_size, reset
         for p in D.parameters():
             p.data.clamp_(-0.01, 0.01)
 
-        # Housekeeping - reset gradient
         reset_grad()
 
     # Generator forward-loss-backward-update
-    z = torch.randn(mb_size, z_dim).to(device)
+    z = torch.randn(mb_size, z_dim, 1, 1).to(device)
     G_sample = G(z)
     D_fake = D(G_sample)
     G_loss = -torch.mean(D_fake)
     G_loss.backward()
     G_optimizer.step()
-    # Housekeeping - reset gradient
     reset_grad()
-    return D_loss, G_loss, z
+    return D_loss, G_loss
 
 
 def main():
     dataset_specific_configs = dict(
         MNIST=dict(
-            training_batch_size=32,
-            z_dim=10,
-            latent_dim=128,
-            evaluation_classifier_weights='logs/2019-12-03T22:52:33.058070_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_'
-                                          'name_Adam_lr_0.001/epoch_0038-model-val_accuracy_99.23409923409923.pth',
+            training_batch_size=64,
+            z_dim=100,
+            evaluation_classifier_weights='./logs/2019-12-11T13:45:01.171945_model_ConvNetSimple_'
+                                          'dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0018-'
+                                          'model-val_accuracy_99.28404928404929.pth',
             evaluation_size=10000,
-            evaluation_classifier_std=(0.5, ),
-            evaluation_classifier_mean=(0.5, )
+            evaluation_classifier_std=(0.5,),
+            evaluation_classifier_mean=(0.5,)
         )
     )
 
@@ -241,8 +259,8 @@ def main():
     dataset_args = dict(
         name=MAP_DATASET_TO_ENUM[opt.dataset],
         training_subset_percentage=opt.training_subset_percentage,
-        mean=(0,),
-        std=(1,)
+        mean=(0.5,),
+        std=(0.5,)
         # For Data Inflation Study - Set to None to use full dataset
     )
 
@@ -263,9 +281,8 @@ def main():
         model_arch_name='models.gan.DCGAN.Generator',
         model_weights_path=os.path.join(opt.model_weights_directory, 'G.pth') if opt.model_weights_directory else None,
         model_constructor_args=dict(
-            latent_dim=dataset_specific_config['latent_dim'],
             z_dim=dataset_specific_config['z_dim'],
-            image_size=dataset_args['name'].value['image_size'] + (dataset_args['name'].value['channels'],)
+            channels=dataset_args['name'].value['channels'],
         )
     )
 
@@ -274,8 +291,7 @@ def main():
         model_arch_name='models.gan.DCGAN.Discriminator',
         model_weights_path=os.path.join(opt.model_weights_directory, 'D.pth') if opt.model_weights_directory else None,
         model_constructor_args=dict(
-            image_size=dataset_args['name'].value['image_size'] + (dataset_args['name'].value['channels'],),
-            latent_dim=dataset_specific_config['latent_dim']
+            channels=dataset_args['name'].value['channels']
         )
     )
 
@@ -283,18 +299,29 @@ def main():
         name='default'
     )
 
-    generator_optimizer_args = dict(
-        name='torch.optim.RMSprop',
-        lr=1e-4
-    )
+    if opt.mode == 'dcgan':
+        generator_optimizer_args = dict(
+            name='torch.optim.Adam',
+            lr=5e-5,
+            betas=(0.5, 0.999)
+        )
 
-    discriminator_optimizer_args = dict(
-        name='torch.optim.RMSprop',
-        lr=1e-4
-    )
+        discriminator_optimizer_args = dict(
+            name='torch.optim.SGD',
+            lr=5e-5
+        )
+    elif opt.mode == 'wgan-wp':
+        generator_optimizer_args = dict(
+            name='torch.optim.RMSprop',
+            lr=0.00005
+        )
+
+        discriminator_optimizer_args = dict(
+            name='torch.optim.RMSprop',
+            lr=0.00005
+        )
 
     callbacks_args = [
-        # dict(SampleSaver=dict(num_samples=8)),
         dict(InceptionMetric=dict(sample_size=train_data_args['batch_size'],
                                   total_samples=dataset_specific_config['evaluation_size'],
                                   classifier_model_args=dict(
@@ -310,11 +337,16 @@ def main():
                                   transform=dict(mean=dataset_specific_config['evaluation_classifier_mean'],
                                                  std=dataset_specific_config['evaluation_classifier_std']),
                                   mode='gan')
-             )
+             ),
+        dict(GanSampler=dict(
+            write_to_tensorboard=True,
+            write_to_disk=True,
+            num_samples=16,)
+        )
     ]
 
     arguments = dict(
-        mode='gan',
+        mode=opt.mode,
         dataset_args=dataset_args,
         train_data_args=train_data_args,
         val_data_args=val_data_args,
@@ -326,7 +358,7 @@ def main():
         callbacks_args=callbacks_args,
         outdir=opt.output_dir,
         num_iterations=opt.num_iterations,
-        random_seed=dataset_specific_config.get('random_seed', 42)
+        random_seed=dataset_specific_config.get('random_seed', random.randint(0, 100))
     )
 
     try:

@@ -33,7 +33,8 @@ class BaseDataset:
                                            batch_size=self.train_data_args['batch_size'],
                                            shuffle=self.train_data_args['shuffle'],
                                            pin_memory=True,
-                                           num_workers=get_cores_count())
+                                           num_workers=get_cores_count(),
+                                           drop_last=True)  # Training might be affected by BatchSize
 
     @property
     def validation_dataloader(self) -> DataLoader:
@@ -41,7 +42,8 @@ class BaseDataset:
                                            batch_size=self.train_data_args['batch_size'],
                                            shuffle=self.train_data_args['shuffle'],
                                            pin_memory=True,
-                                           num_workers=get_cores_count())
+                                           num_workers=get_cores_count(),
+                                           drop_last=False)
 
     @property
     def test_dataloader(self):
@@ -49,7 +51,8 @@ class BaseDataset:
                                            batch_size=self.val_data_args['batch_size'],
                                            shuffle=self.val_data_args['shuffle'],
                                            pin_memory=True,
-                                           num_workers=get_cores_count())
+                                           num_workers=get_cores_count(),
+                                           drop_last=False)
 
     @property
     def get_train_dataset_size(self):

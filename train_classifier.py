@@ -95,7 +95,7 @@ def objective(arguments):
     max_validation_accuracy = 0
     itr = 0
 
-    run_callbacks(callbacks, model=model, mode=CallbackMode.ON_TRAIN_BEGIN)
+    run_callbacks(callbacks, model=model, optimizer=optimizer, mode=CallbackMode.ON_TRAIN_BEGIN)
     for epoch in range(arguments['nb_epochs']):
         """ Train the model """
         train_data_args = arguments['train_data_args']
@@ -106,7 +106,7 @@ def objective(arguments):
                                        description=f"Training {epoch + 1}/{arguments['nb_epochs']}: ")
             loss_running_average = RunningAverage()
 
-            run_callbacks(callbacks, model=model, mode=CallbackMode.ON_EPOCH_BEGIN, epoch=epoch)
+            run_callbacks(callbacks, model=model, optimizer=optimizer, mode=CallbackMode.ON_EPOCH_BEGIN, epoch=epoch)
             model.train()
             for i, data in enumerate(train_dataloader, 0):
                 # get the inputs
@@ -134,7 +134,7 @@ def objective(arguments):
                 itr += 1
 
             # Callbacks ON_EPOCH_END should be run only when training is enabled. Thus call here.
-            run_callbacks(callbacks, model=model, mode=CallbackMode.ON_EPOCH_END, epoch=epoch)
+            run_callbacks(callbacks, model=model, optimizer=optimizer, mode=CallbackMode.ON_EPOCH_END, epoch=epoch)
 
         """ Validate the model """
         val_data_args = arguments['val_data_args']
@@ -177,7 +177,7 @@ def objective(arguments):
         if not train_data_args['to_train']:
             break
 
-    run_callbacks(callbacks, model=model, mode=CallbackMode.ON_TRAIN_END)
+    run_callbacks(callbacks, model=model, optimizer=optimizer, mode=CallbackMode.ON_TRAIN_END)
 
     logger.info('Finished Training')
     close_tensorboard()
@@ -192,8 +192,8 @@ def main():
         ),
         MNIST=dict(
             training_batch_size=64,
-            mean=(0.5,),
-            std=(0.5,)
+            mean=(0.5, ),
+            std=(0.5, )
         ),
         CELEBA=dict(
             training_batch_size=64,
@@ -250,6 +250,8 @@ def main():
         lr=1e-3
     )
 
+    callbacks_args = []
+
     arguments = dict(
         dataset_args=dataset_args,
         train_data_args=train_data_args,
@@ -257,6 +259,7 @@ def main():
         model_args=model_args,
         loss_args=loss_args,
         optimizer_args=optimizer_args,
+        callbacks_args=callbacks_args,
         outdir=opt.output_dir,
         nb_epochs=opt.num_epoch,
         random_seed=dataset_specific_config.get('random_seed', 42),

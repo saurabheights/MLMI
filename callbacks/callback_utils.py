@@ -8,14 +8,18 @@ from metrics.inception_metric_callback import InceptionScoreCallback
 from models.utils import get_model
 import torchvision
 
+from visualization.gan_sampler import GanSampler
+
 
 def run_callbacks(callbacks: List[Callbacks],
                   model,
+                  optimizer,
                   mode: CallbackMode,
                   epoch=None,
                   iteration=None):
     for callback in callbacks:
         callback.set_model(model)
+        callback.set_optimizer(optimizer)
         if mode == CallbackMode.ON_EPOCH_BEGIN:
             callback.on_epoch_begin(epoch)
         elif mode == CallbackMode.ON_EPOCH_END:
@@ -32,7 +36,7 @@ def run_callbacks(callbacks: List[Callbacks],
 
 def batch_normalize_transform(mean, std):
     def f(batch_sample):
-        batch_sample = batch_sample.reshape(batch_sample.size()[0], 1, 28, 28)  # Fix hardcoded values
+        tmp = batch_sample.mul(0.5).add(0.5)  # Tanh layer of model
         tmp = (batch_sample - mean[0]) / std[0]  # ToDo Make it work for all images.
         return tmp
 
@@ -59,6 +63,10 @@ def generate_inception_metric_callback(callback_args, device, outdir):
         raise NotImplementedError('generate_inception_metric_callback for classification is not implemented')
 
 
+def generate_gan_sampler_callback(callback_args, device, outdir):
+    return GanSampler(callback_args, device, outdir)
+
+
 def generate_callbacks(arguments: dict,
                        dataset: BaseDataset,
                        device,
@@ -68,11 +76,13 @@ def generate_callbacks(arguments: dict,
     Create and add all callbacks instances to `callbacks` list 
     """
     for callback_arg in arguments['callbacks_args']:
-        if len(callback_arg.keys()) == 1:
-            key = list(callback_arg.keys())[0]
-            if key == 'InceptionMetric':
-                callbacks.append(generate_inception_metric_callback(callback_arg[key],
-                                                                    device,
-                                                                    outdir))
+        assert len(callback_arg.keys()) == 1
+        key = list(callback_arg.keys())[0]
+        if key == 'InceptionMetric':
+            callbacks.append(generate_inception_metric_callback(callback_arg[key],
+                                                                device,
+                                                                outdir))
+        elif key == 'GanSampler':
+            callbacks.append(generate_gan_sampler_callback(callback_arg[key], device, outdir))
 
     return callbacks
