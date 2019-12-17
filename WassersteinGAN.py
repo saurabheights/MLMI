@@ -115,7 +115,7 @@ def train_gan(arguments):
         G.zero_grad()
         D.zero_grad()
 
-    mb_size = arguments['train_data_args']['batch_size']
+    batch_size = arguments['train_data_args']['batch_size']
     z_dim = arguments['generator_model_args']['model_constructor_args']['z_dim']
 
     generator = infinite_train_gen(dataset.train_dataloader)
@@ -135,10 +135,10 @@ def train_gan(arguments):
         for _ in t:
             if arguments['mode'] == 'dcgan':
                 D_loss, G_loss = train_gan_iter(D, D_optimizer, G, G_optimizer,
-                                                loss, device, generator, mb_size, reset_grad, z_dim)
+                                                loss, device, generator, batch_size, reset_grad, z_dim)
             elif arguments['mode'] == 'wgan-wp':
                 D_loss, G_loss = train_wgan_iter(D, D_optimizer, G, G_optimizer, device,
-                                                 generator, mb_size, reset_grad, z_dim)
+                                                 generator, batch_size, reset_grad, z_dim)
 
             # Log D_Loss and G_Loss in progress_bar
             t.set_postfix(D_Loss=D_loss.data.cpu().item(),
@@ -163,9 +163,9 @@ def train_gan(arguments):
 
 
 def train_gan_iter(D, D_optimizer, G, G_optimizer,
-                   loss, device, generator, mb_size, reset_grad, z_dim):
-    real_labels = torch.ones(mb_size).to(device)
-    fake_labels = torch.zeros(mb_size).to(device)
+                   loss, device, generator, batch_size, reset_grad, z_dim):
+    real_labels = torch.ones(batch_size).to(device)
+    fake_labels = torch.zeros(batch_size).to(device)
 
     # Train discriminator
     # Compute BCE_Loss using real images
@@ -175,7 +175,7 @@ def train_gan_iter(D, D_optimizer, G, G_optimizer,
     D_loss_real = loss(outputs.squeeze(), real_labels)
 
     # Compute BCE Loss using fake images
-    z = torch.rand((mb_size, z_dim, 1, 1), device=device)
+    z = torch.rand((batch_size, z_dim, 1, 1), device=device)
     fake_images = G(z)
     outputs = D(fake_images)
     D_loss_fake = loss(outputs.squeeze(), fake_labels)
@@ -190,7 +190,7 @@ def train_gan_iter(D, D_optimizer, G, G_optimizer,
 
     # Train generator
     # Compute loss with fake images
-    z = torch.rand((mb_size, z_dim, 1, 1), device=device)
+    z = torch.rand((batch_size, z_dim, 1, 1), device=device)
     fake_images = G(z)
     outputs = D(fake_images)
     G_loss = loss(outputs.squeeze(), real_labels)
