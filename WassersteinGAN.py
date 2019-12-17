@@ -7,7 +7,7 @@ from typing import List
 
 import numpy as np
 import torch.utils.data
-from tqdm import tqdm
+from tqdm import trange
 
 from callbacks.callback_utils import generate_callbacks, run_callbacks
 from callbacks.callbacks import Callbacks, CallbackMode
@@ -115,10 +115,6 @@ def train_gan(arguments):
         G.zero_grad()
         D.zero_grad()
 
-    # Lists to keep track of progress
-    G_losses = []
-    D_losses = []
-
     mb_size = arguments['train_data_args']['batch_size']
     z_dim = arguments['generator_model_args']['model_constructor_args']['z_dim']
 
@@ -135,7 +131,8 @@ def train_gan(arguments):
         G.train()
         D.train()
 
-        for _ in tqdm(range(interval_length)):
+        t = trange(interval_length)
+        for _ in t:
             if arguments['mode'] == 'dcgan':
                 D_loss, G_loss = train_gan_iter(D, D_optimizer, G, G_optimizer,
                                                 loss, device, generator, mb_size, reset_grad, z_dim)
@@ -143,8 +140,9 @@ def train_gan(arguments):
                 D_loss, G_loss = train_wgan_iter(D, D_optimizer, G, G_optimizer, device,
                                                  generator, mb_size, reset_grad, z_dim)
 
-            if global_step % 10 == 0:
-                print(f'\nDiscriminator Loss: {D_loss.data.cpu().item()}, Generator Loss: {G_loss.data.cpu().item()}\n')
+            # Log D_Loss and G_Loss in progress_bar
+            t.set_postfix(D_Loss=D_loss.data.cpu().item(),
+                          G_Loss=G_loss.data.cpu().item())
 
             # Save Loss In Tensorboard
             tensorboard_writer.save_scalars(f'{arguments["mode"].upper()}_Loss',
