@@ -41,6 +41,9 @@ parser.add_argument('--model_weights_directory', type=str, required=False, defau
 parser.add_argument('--output_dir', type=str, required=False, default='./logs/',
                     help='Optional - Where to create output directory path. Default ./logs.')
 
+parser.add_argument('--gpu', type=int, default=0,
+                    help='Optional - If gpu available, which one to use. Default value 0.')
+
 opt = parser.parse_args()
 
 
@@ -69,7 +72,7 @@ def train_gan(arguments):
     np.random.seed(arguments['random_seed'])  # Set for numpy
 
     """ Set device - cpu or gpu """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{opt.gpu}" if torch.cuda.is_available() else "cpu")
     logger.info(f'Using device - {device}')
 
     """ Load Model with weights(if available) """
