@@ -12,18 +12,18 @@ class Generator(torch.nn.Module):
         self.main_module = nn.Sequential(
             # Z latent vector 100
             nn.ConvTranspose2d(in_channels=z_dim, out_channels=1024, kernel_size=4, stride=1, padding=0),
-            nn.LeakyReLU(0.2, inplace=True),
             nn.BatchNorm2d(num_features=1024),
+            nn.ReLU(True),
 
             # State (1024x4x4)
             nn.ConvTranspose2d(in_channels=1024, out_channels=512, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.2, inplace=True),
             nn.BatchNorm2d(num_features=512),
+            nn.ReLU(True),
 
             # State (512x8x8)
             nn.ConvTranspose2d(in_channels=512, out_channels=256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(num_features=256),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.ReLU(True),
 
             # State (256x16x16)
             nn.ConvTranspose2d(in_channels=256, out_channels=channels, kernel_size=4, stride=2, padding=1))
@@ -60,9 +60,9 @@ class Discriminator(torch.nn.Module):
             # output of main module --> State (1024x4x4)
 
         self.output = nn.Sequential(
-            nn.Conv2d(in_channels=1024, out_channels=1, kernel_size=4, stride=1, padding=0),
-            # Output 1
-            nn.Sigmoid())
+            # The output of D is no longer a probability, we do not apply sigmoid at the output of D.
+            nn.Conv2d(in_channels=1024, out_channels=1, kernel_size=4, stride=1, padding=0))
+
 
     def forward(self, x):
         x = self.main_module(x)
