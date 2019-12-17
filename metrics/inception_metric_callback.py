@@ -62,7 +62,8 @@ class InceptionScoreCallback(Callbacks):
         :return: The Classifier Score (scalar quantity)
         """
         generator = self.model[0]
-        noise = torch.randn(self.batch_size, generator.z_dim, device=self.device)
+        generator.eval()
+        noise = torch.randn(self.batch_size, generator.z_dim, 1, 1, device=self.device)
         img = generator(noise).detach()
         score = self.calculate_score(self.classifier(self.transform(img).to(self.device)))
         return score
@@ -98,7 +99,7 @@ class InceptionScoreCallback(Callbacks):
 
 if __name__ == '__main__':
     # Model trained on MNIST
-    eval_model = ConvNetSimple(input_size=(28, 28),
+    eval_model = ConvNetSimple(input_size=SupportedDataset.MNIST_Enum.value['image_size'],
                                number_of_input_channels=1,
                                number_of_classes=10)
 
@@ -126,11 +127,9 @@ if __name__ == '__main__':
                                           train_data_args,
                                           val_data_args)
 
-    eval_model.load_state_dict(torch.load('logs/2019-12-03T22:52:33.058070_model_ConvNetSimple_dataset_MNIST_'
-                                          'subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0038-model-'
-                                          'val_accuracy_99.23409923409923.pth'))
+    eval_model.load_state_dict(torch.load('./logs/2019-12-11T13:45:01.171945_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0018-model-val_accuracy_99.28404928404929.pth'))
     start = time.time()
     callback = InceptionScoreCallback(eval_model, dataset=dataset, mode='classifier', outdir='./logs/inceptionscore')
-    print(callback.compute_inception_score())
+    print('\nInception Score of real dataset is ', callback.compute_inception_score())
     end = time.time()
     print(f'Time taken = {end - start}')
