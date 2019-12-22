@@ -202,15 +202,6 @@ def main():
         ),
         CELEBA=dict(
             training_batch_size=64,
-            # Size of z latent vector (i.e. size of generator input)
-            nz=100,
-            random_seed=999,
-            # Size of feature maps in generator
-            ngf=64,
-            # Size of feature maps in discriminator
-            ndf=64,
-            lr=0.0002,
-            beta1=0.5
         ),
     )
 
