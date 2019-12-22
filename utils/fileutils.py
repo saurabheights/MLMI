@@ -21,7 +21,7 @@ def get_result_directory_name(timestamp,
                               dataset_args: dict):
     # Model and Dataset first
     dirname = f'{timestamp}_mode_{mode}'
-    if mode == 'classifier':
+    if mode == 'classification':
         dirname += f'_model_{model_arch_name.rsplit(sep=".", maxsplit=1)[1]}'
     else:
         dirname += f'_model_{generator_model_arch_name.rsplit(sep=".", maxsplit=2)[1]}'
@@ -31,7 +31,7 @@ def get_result_directory_name(timestamp,
     # Training Hyperparams - Batch Size, Optimizer
     dirname += f'_bs_{batch_size}'
 
-    if mode == 'classifier':
+    if mode == 'classification':
         for key, value in optimizer_args.items():
             dirname += f'_{key}_{filter_optimizer_keys(value)}'
     else:

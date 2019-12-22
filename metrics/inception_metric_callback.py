@@ -90,7 +90,7 @@ class InceptionScoreCallback(Callbacks):
                 for images, labels in tqdm(self.dataset.test_dataloader):
                     batch_inception_score = self.calculate_score(self.classifier(images.to(self.device)))
                     score += batch_inception_score
-            elif self.mode == 'gan':
+            else:
                 num_batch = int(self.total_samples / self.batch_size)
                 for _ in range(num_batch):
                     score += self.metric_ops()
