@@ -21,7 +21,7 @@ class ConvNetSimple(nn.Module):
 
         self.conv3 = nn.Conv2d(16, 64, 3)
 
-        self.avgpool = nn.AdaptiveAvgPool2d((2, 2))
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.fc = nn.Linear(64, number_of_classes)
 
