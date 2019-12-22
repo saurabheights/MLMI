@@ -245,9 +245,10 @@ def main():
         MNIST=dict(
             training_batch_size=64,
             z_dim=100,
-            evaluation_classifier_weights='./logs/2019-12-11T13:45:01.171945_model_ConvNetSimple_'
-                                          'dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0018-'
-                                          'model-val_accuracy_99.28404928404929.pth',
+            evaluation_classifier_weights='./logs/2019-12-22T02:24:08.329024_mode_classification_'
+                                          'model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_'
+                                          'name_Adam_lr_0.001/epoch_0032-model-val_accuracy_'
+                                          '99.11754911754912.pth',
             evaluation_size=10000,
             evaluation_classifier_std=(0.5,),
             evaluation_classifier_mean=(0.5,)
