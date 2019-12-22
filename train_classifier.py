@@ -20,7 +20,7 @@ from models.utils import get_model
 from optimizer.utils import create_optimizer
 from utils import logger
 from utils.RunningAverage import RunningAverage
-from utils.fileutils import make_results_dir
+from utils.fileutils import make_results_dir, delete_old_file
 from utils.progress_bar import ProgressBar
 from utils.tensorboard_writer import initialize_tensorboard, close_tensorboard
 
@@ -95,6 +95,9 @@ def objective(arguments):
     max_validation_accuracy = 0
     itr = 0
 
+    best_model_path = None
+    delete_old_models = True
+
     run_callbacks(callbacks, model=model, optimizer=optimizer, mode=CallbackMode.ON_TRAIN_BEGIN)
     for epoch in range(arguments['nb_epochs']):
         """ Train the model """
@@ -167,8 +170,10 @@ def objective(arguments):
 
             """ Save Model """
             if val_accuracy > max_validation_accuracy:
-                torch.save(model.state_dict(),
-                           os.path.join(outdir, f'epoch_{epoch:04}-model-val_accuracy_{val_accuracy}.pth'))
+                if delete_old_models and best_model_path:
+                    delete_old_file(best_model_path)
+                best_model_path = os.path.join(outdir, f'epoch_{epoch:04}-model-val_accuracy_{val_accuracy}.pth')
+                torch.save(model.state_dict(), best_model_path)
                 max_validation_accuracy = val_accuracy
 
         tensorboard_writer.flush()

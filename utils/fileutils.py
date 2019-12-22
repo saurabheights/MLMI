@@ -86,3 +86,7 @@ def make_test_results_dir(arguments):
     os.makedirs(outdir, exist_ok=True)
     logger.info("Output directory: %s", outdir)
     return outdir
+
+
+def delete_old_file(path):
+    os.remove(path)
