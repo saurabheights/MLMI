@@ -17,6 +17,7 @@ from models.utils import get_model
 from optimizer.utils import create_optimizer
 from utils import logger
 from utils.fileutils import make_results_dir
+from utils.sysutils import is_debug_mode
 from utils.tensorboard_writer import initialize_tensorboard
 
 parser = argparse.ArgumentParser()
@@ -119,8 +120,8 @@ def train_gan(arguments):
     z_dim = arguments['generator_model_args']['model_constructor_args']['z_dim']
 
     generator = infinite_train_gen(dataset.train_dataloader)
-    interval_length = 400
-    num_intervals = int(arguments['num_iterations'] / interval_length)
+    interval_length = 10 if is_debug_mode() else 400
+    num_intervals = 1 if is_debug_mode() else int(arguments['num_iterations'] / interval_length)
 
     global_step = 0
     for it in range(num_intervals):
@@ -245,13 +246,22 @@ def main():
         MNIST=dict(
             training_batch_size=64,
             z_dim=100,
-            evaluation_classifier_weights='./logs/2019-12-22T02:24:08.329024_mode_classification_'
-                                          'model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_'
-                                          'name_Adam_lr_0.001/epoch_0032-model-val_accuracy_'
-                                          '99.11754911754912.pth',
-            evaluation_size=10000,
-            evaluation_classifier_std=(0.5,),
-            evaluation_classifier_mean=(0.5,)
+            inception_metric=dict(
+                evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
+                evaluation_classifier_weights='logs/2019-12-27T13:09:07.398172_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001_weight_decay_0.005/epoch_0034-model-val_accuracy_98.06859806859806.pth',
+                classifier_model_layer=4,
+                evaluation_size=10000,
+                evaluation_classifier_std=(0.5,),
+                evaluation_classifier_mean=(0.5,)
+            ),
+            fid_metric=dict(
+                evaluation_arch_name='models.evaluation.inception.InceptionV3',
+                evaluation_classifier_weights=None,
+                classifier_model_layer=None,
+                evaluation_size=10000,
+                evaluation_classifier_std=(0.5, 0.5, 0.5),
+                evaluation_classifier_mean=(0.5, 0.5, 0.5)
+            )
         )
     )
 
@@ -323,27 +333,41 @@ def main():
             lr=0.00005
         )
 
+    dataset_inception_metric = dataset_specific_config['inception_metric']
+    dataset_fid_metric = dataset_specific_config['fid_metric']
     callbacks_args = [
         dict(InceptionMetric=dict(sample_size=train_data_args['batch_size'],
-                                  total_samples=dataset_specific_config['evaluation_size'],
+                                  total_samples=dataset_inception_metric['evaluation_size'],
                                   classifier_model_args=dict(
                                       # Use Enums here
-                                      model_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
-                                      model_weights_path=dataset_specific_config['evaluation_classifier_weights'],
+                                      model_arch_name=dataset_inception_metric['evaluation_arch_name'],
+                                      model_weights_path=dataset_inception_metric['evaluation_classifier_weights'],
                                       model_constructor_args=dict(
                                           input_size=dataset_args['name'].value['image_size'],
                                           number_of_input_channels=dataset_args['name'].value['channels'],
                                           number_of_classes=dataset_args['name'].value['labels_count'],
                                       )
                                   ),
-                                  transform=dict(mean=dataset_specific_config['evaluation_classifier_mean'],
-                                                 std=dataset_specific_config['evaluation_classifier_std']),
+                                  transform=dict(mean=dataset_inception_metric['evaluation_classifier_mean'],
+                                                 std=dataset_inception_metric['evaluation_classifier_std']),
                                   mode='gan')
+             ),
+        dict(FrechetMetric=dict(sample_size=train_data_args['batch_size'],
+                                total_samples=dataset_fid_metric['evaluation_size'],
+                                classifier_model_args=dict(
+                                    # Use Enums here
+                                    model_arch_name=dataset_fid_metric['evaluation_arch_name'],
+                                    model_weights_path=dataset_fid_metric['evaluation_classifier_weights'],
+                                    model_constructor_args=dict()
+                                ),
+                                classifier_model_layer=dataset_fid_metric['classifier_model_layer'],
+                                transform=dict(mean=dataset_fid_metric['evaluation_classifier_mean'],
+                                               std=dataset_fid_metric['evaluation_classifier_std']), )
              ),
         dict(GanSampler=dict(
             write_to_tensorboard=True,
             write_to_disk=True,
-            num_samples=16,)
+            num_samples=16, )
         )
     ]
 

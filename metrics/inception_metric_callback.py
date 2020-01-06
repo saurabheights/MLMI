@@ -37,7 +37,7 @@ class InceptionScoreCallback(Callbacks):
         super().__init__()
         self.outdir = outdir
         self.device = device
-        self.classifier = classifier
+        self.classifier = classifier.to(device)
         self.dataset = dataset
         self.batch_size = batch_size
         self.total_samples = total_samples
@@ -136,9 +136,12 @@ if __name__ == '__main__':
 
     eval_model.load_state_dict(torch.load('./logs/2019-12-22T02:24:08.329024_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0032-model-val_accuracy_99.11754911754912.pth'))
     outdir = './logs/2019-12-22T02:24:08.329024_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/'
+    device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
+
     logger.init(outdir, logging.INFO)
     start = time.time()
-    callback = InceptionScoreCallback(eval_model, dataset=dataset, mode='classifier', outdir=outdir)
+    callback = InceptionScoreCallback(eval_model, device=device,
+                                      dataset=dataset, mode='classifier', outdir=outdir)
     logger.info(f'Inception Score of real dataset is {callback.compute_inception_score()}')
     end = time.time()
     logger.info(f'Time taken = {end - start}')
