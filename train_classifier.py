@@ -27,7 +27,7 @@ from utils.tensorboard_writer import initialize_tensorboard, close_tensorboard
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epoch', type=int, default=50,
                     help='Number of epochs for training. Default 50.')
-parser.add_argument('--dataset', type=str, default='CELEBA', choices=['CIFAR10', 'MNIST', 'CELEBA'],
+parser.add_argument('--dataset', type=str, default='CELEBA', choices=['CIFAR10', 'MNIST', 'CELEBA', 'ISIC'],
                     help='Required - The dataset to choose')
 
 # Data Inflation Study, allows training on smaller subset of selected Dataset
