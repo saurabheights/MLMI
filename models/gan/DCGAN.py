@@ -33,6 +33,7 @@ class Generator(torch.nn.Module):
 
     def forward(self, x):
         x = self.main_module(x)
+        self.embeddings = x.detach().clone()  # consumes slightly extra memory
         return self.output(x)
 
 

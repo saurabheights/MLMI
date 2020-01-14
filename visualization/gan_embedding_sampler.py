@@ -32,8 +32,6 @@ class GanEmbeddingSampler(Callbacks):
         self.run_on_nth_iteration = gan_embedding_sampler_args.get('run_on_nth_iteration', False)
         self.run_on_train_end = gan_embedding_sampler_args.get('run_on_train_end', True)
 
-        self.embedding_extractor = InceptionV3(output_blocks=[3], normalize_input=False).to(self.device)
-
         # To always display one saliency map. Allows quick catching of error.
         self.debug = True
 
@@ -64,9 +62,8 @@ class GanEmbeddingSampler(Callbacks):
                 noise = torch.randn(self.batch_size, generator.z_dim, 1, 1, device=self.device)
                 images = generator(noise).detach()
                 images = images.repeat(1, 3, 1, 1)
-                embeddings = self.embedding_extractor(images)
                 images = images.cpu()
-                embeddings = embeddings[0].reshape((embeddings[0].shape[0], -1)).cpu()
+                embeddings = generator.embeddings.reshape((generator.embeddings.shape[0], -1)).cpu()
                 if total_embeddings is not None:
                     total_embeddings = torch.cat((total_embeddings, embeddings), 0)
                     total_images = torch.cat((total_images, images), 0)

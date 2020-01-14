@@ -34,8 +34,8 @@ parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'C
 parser.add_argument('--training_subset_percentage', type=float, default=1.0,
                     help='Optional - Subset of data to use for training. Default use whole dataset')
 
-parser.add_argument('--generator_model_path', type=str, required=True,
-                    help='Path for generator pretrained weights.')
+parser.add_argument('--generator_model_path', type=str, required=False, default=None,
+                    help='Optional - Path for generator pretrained weights.')
 
 parser.add_argument('--output_dir', type=str, required=False, default='./logs/',
                     help='Optional - Where to create output directory path. Default ./logs.')
@@ -299,7 +299,7 @@ def main():
     discriminator_model_args = dict(
         # Use Enums here
         model_arch_name='models.gan.DCGAN.Discriminator',
-        model_weights_path=opt.generator_model_path.replace('G-', 'D-'),
+        model_weights_path=opt.generator_model_path.replace('G-', 'D-') if opt.generator_model_path else None,
         model_constructor_args=dict(
             channels=dataset_args['name'].value['channels']
         )
