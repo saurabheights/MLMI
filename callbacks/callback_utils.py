@@ -7,6 +7,7 @@ from dataset.BaseDataset import BaseDataset
 from metrics.frechet_metric_callback import FrechetInceptionScoreCallback
 from metrics.inception_metric_callback import InceptionScoreCallback
 from models.utils import get_model
+from visualization.gan_embedding_sampler import GanEmbeddingSampler
 
 from visualization.gan_sampler import GanSampler
 
@@ -83,6 +84,12 @@ def generate_frechet_metric_callback(callback_args, device, outdir, dataset):
                                          dataset=dataset)
 
 
+def generate_gan_embedding_sampler_callback(callback_args, device, outdir):
+    return GanEmbeddingSampler(callback_args,
+                               device,
+                               outdir)
+
+
 def generate_gan_sampler_callback(callback_args, device, outdir):
     return GanSampler(callback_args, device, outdir)
 
@@ -106,5 +113,7 @@ def generate_callbacks(arguments: dict,
             callbacks.append(generate_gan_sampler_callback(callback_arg[key], device, outdir))
         elif key == 'FrechetMetric':
             callbacks.append(generate_frechet_metric_callback(callback_arg[key], device, outdir, dataset))
+        elif key == 'GanEmbeddingSampler':
+            callbacks.append(generate_gan_embedding_sampler_callback(callback_arg[key], device, outdir))
 
     return callbacks

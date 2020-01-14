@@ -42,6 +42,9 @@ class TensorboardWriter:
         except Exception as e:
             logger.exception('Check this for fix: https://github.com/lanpa/tensorboardX/issues/389#issuecomment-475879228')
 
+    def save_embedding(self, mat, metadata=None, label_img=None, global_step=None, tag='default', metadata_header=None):
+        self.writer.add_embedding(mat, metadata, label_img, global_step, tag, metadata_header)
+
     def flush(self):
         """
         If you need to flush all data immediately.

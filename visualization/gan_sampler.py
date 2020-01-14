@@ -31,8 +31,7 @@ class GanSampler(Callbacks):
 
     def generate_generator_samples(self, iteration):
         """
-        Writes generated saliency maps to Tensorboard.
-        N Samples are written to Tensorboard. Sample stays same between every call to check their evolution.
+        N fake sample images are written to Tensorboard.
         :return: None
         """
         tensorboard_writer, iteration_output_dir = None, None

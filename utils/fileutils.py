@@ -29,18 +29,20 @@ def get_result_directory_name(timestamp,
     dirname += f'_subset_{dataset_args["training_subset_percentage"]}'
 
     # Training Hyperparams - Batch Size, Optimizer
-    dirname += f'_bs_{batch_size}'
+    if batch_size:
+        dirname += f'_bs_{batch_size}'
 
-    if mode == 'classification':
-        for key, value in optimizer_args.items():
-            dirname += f'_{key}_{filter_optimizer_keys(value)}'
-    else:
-        dirname += '_G'
-        for key, value in generator_optimizer_args.items():
-            dirname += f'_{key}_{filter_optimizer_keys(value)}'
-        dirname += '_D'
-        for key, value in discriminator_optimizer_args.items():
-            dirname += f'_{key}_{filter_optimizer_keys(value)}'
+    if optimizer_args or generator_optimizer_args:
+        if mode == 'classification':
+            for key, value in optimizer_args.items():
+                dirname += f'_{key}_{filter_optimizer_keys(value)}'
+        else:
+            dirname += '_G'
+            for key, value in generator_optimizer_args.items():
+                dirname += f'_{key}_{filter_optimizer_keys(value)}'
+            dirname += '_D'
+            for key, value in discriminator_optimizer_args.items():
+                dirname += f'_{key}_{filter_optimizer_keys(value)}'
 
     return dirname
 
@@ -58,12 +60,18 @@ def make_results_dir(arguments):
     outdir = arguments.get("outdir")
     model_arch_name = arguments.get('model_args', dict()).get('model_arch_name', None)
     generator_model_arch_name = arguments.get('generator_model_args', dict()).get('model_arch_name', None)
-    discriminator_model_arch_name = arguments.get('discriminator_model_args', dict()).get('model_arch_name', None)
 
+    timestamp = datetime.datetime.now().isoformat()
     train_data_args = arguments.get('train_data_args')
-    batch_size = train_data_args.get("batch_size", 1)
+    batch_size = None
+    if train_data_args:
+        batch_size = train_data_args.get("batch_size", 1)
+        timestamp += '_train'
+    else:
+        timestamp += '_eval'
 
-    dirname = get_result_directory_name(timestamp=datetime.datetime.now().isoformat(),
+
+    dirname = get_result_directory_name(timestamp=timestamp,
                                         mode=mode,
                                         batch_size=batch_size,
                                         model_arch_name=model_arch_name,

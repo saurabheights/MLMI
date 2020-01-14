@@ -12,7 +12,8 @@ class CallbackMode(Enum):
 
 class Callbacks:
     def __init__(self):
-        pass
+        self.model = None
+        self.optimizer = None
 
     def set_model(self, model):
         self.model = model
