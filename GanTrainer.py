@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 import random
 from pprint import pformat
 from typing import List
@@ -35,9 +34,8 @@ parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'C
 parser.add_argument('--training_subset_percentage', type=float, default=1.0,
                     help='Optional - Subset of data to use for training. Default use whole dataset')
 
-parser.add_argument('--model_weights_directory', type=str, required=False, default=None,
-                    help='Optional - Directory containing Pretrained weights for generator and discriminator. '
-                         'Requires testing')
+parser.add_argument('--generator_model_path', type=str, required=True,
+                    help='Path for generator pretrained weights.')
 
 parser.add_argument('--output_dir', type=str, required=False, default='./logs/',
                     help='Optional - Where to create output directory path. Default ./logs.')
@@ -291,7 +289,7 @@ def main():
     generator_model_args = dict(
         # Use Enums here
         model_arch_name='models.gan.DCGAN.Generator',
-        model_weights_path=os.path.join(opt.model_weights_directory, 'G.pth') if opt.model_weights_directory else None,
+        model_weights_path=opt.generator_model_path,
         model_constructor_args=dict(
             z_dim=dataset_specific_config['z_dim'],
             channels=dataset_args['name'].value['channels'],
@@ -301,7 +299,7 @@ def main():
     discriminator_model_args = dict(
         # Use Enums here
         model_arch_name='models.gan.DCGAN.Discriminator',
-        model_weights_path=os.path.join(opt.model_weights_directory, 'D.pth') if opt.model_weights_directory else None,
+        model_weights_path=opt.generator_model_path.replace('G-', 'D-'),
         model_constructor_args=dict(
             channels=dataset_args['name'].value['channels']
         )
