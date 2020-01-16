@@ -15,7 +15,7 @@ class ISIC(BaseDataset):
                  train_data_args,
                  val_data_args):
         super(ISIC, self).__init__(train_data_args, val_data_args)
-        dataset_dir = './data/' + self.__class__.__name__
+        dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
 
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
@@ -92,3 +92,26 @@ class ISIC(BaseDataset):
 
         uniform_subset = torch.utils.data.Subset(self.full_training_set, indices)
         return uniform_subset
+
+def main():
+
+    dataset_args = dict(
+        name=ISIC,
+        training_subset_percentage=80,
+        # For Data Inflation Study - Set to None to use full dataset
+    )
+    train_data_args = dict(
+        batch_size=64,
+        shuffle=True,
+        to_train=True,
+    )
+    val_data_args = dict(
+        batch_size=256,
+        shuffle=False,
+        validate_step_size=1,
+    )
+    dataset = ISIC(dataset_args, train_data_args, val_data_args)
+    dataset.debug()
+
+if __name__== "__main__":
+  main()
