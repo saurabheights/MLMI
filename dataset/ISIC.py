@@ -4,8 +4,11 @@ from pprint import pprint
 import numpy
 import torch
 import torchvision
-
+import csv
+from os import listdir
+import os
 from dataset.BaseDataset import BaseDataset
+import shutil
 
 
 class ISIC(BaseDataset):
@@ -16,7 +19,6 @@ class ISIC(BaseDataset):
                  val_data_args):
         super(ISIC, self).__init__(train_data_args, val_data_args)
         dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
-
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
         mean = (0.5, 0.5, 0.5)
@@ -62,7 +64,7 @@ class ISIC(BaseDataset):
 
     @property
     def classes(self):
-        return ['images']
+        return ['MEL', 'NV', 'BCC', 'AKIEC', 'BKL', 'DF', 'VASC']
 
     def get_uniform_subset(self, samples_per_label):
         targets = self.original_training_set.targets
@@ -92,6 +94,36 @@ class ISIC(BaseDataset):
 
         uniform_subset = torch.utils.data.Subset(self.full_training_set, indices)
         return uniform_subset
+
+    def csv_loader(self):
+        label_path = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__ +\
+                     "/labels/ISIC2018_Task3_Training_GroundTruth.csv"
+        dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
+        with open(label_path, 'r') as f:
+            reader = csv.reader(f)
+            line_count = 0
+            for row in reader:
+                if line_count==0:
+                    print(f'Column names are {", ".join(row)}')
+                    line_count += 1
+                else:
+                    print(f'row names are {", ".join(row)}')
+                    fileName = dataset_dir + "/images/" + row[0] + ".jpg"
+                    path_label = ""
+                    if os.path.exists(fileName):
+                        for i in range(1,8):
+                            if (row[i] == '1.0'):
+                                path_label = self.classes[i-1]
+                                break
+                        path_label = dataset_dir+ "/images/" + path_label
+                        if os.path.exists(path_label) == False:
+                            os.mkdir(path_label)
+                        shutil.move(fileName, path_label)
+                    line_count += 1
+                    print(fileName)
+                    print("copied to")
+                    print(path_label)
+
 
 def main():
 
