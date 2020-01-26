@@ -23,6 +23,10 @@ class ISIC(BaseDataset):
         # ToDo - Fix mean and std.
         mean = (0.5, 0.5, 0.5)
         std = (0.5, 0.5, 0.5)
+        # # dsMean = [0.49139968, 0.48215827, 0.44653124]
+        # dsMean = [0.4914, 0.4822, 0.4465]
+        # # dsStd = [0.24703233, 0.24348505, 0.26158768]
+        # dsStd = [0.2023, 0.1994, 0.2010]
         self.__normalize_transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize(mean, std)])

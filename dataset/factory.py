@@ -3,6 +3,7 @@ from enum import Enum
 from dataset.CELEBA import CELEBA
 from dataset.CIFAR10 import CIFAR10
 from dataset.MNIST import MNIST
+from dataset.ISIC import ISIC
 
 
 class SupportedDataset(Enum):
@@ -30,11 +31,20 @@ class SupportedDataset(Enum):
         labels_count=10
     )
 
+    ISIC_Enum = dict(
+        dataloader=ISIC,
+        image_size=(64, 64),
+        channels=3,
+        training_size=8000,
+        labels_count=7
+    )
+
 
 MAP_DATASET_TO_ENUM = dict(
     CIFAR10=SupportedDataset.CIFAR10_Enum,
     MNIST=SupportedDataset.MNIST_Enum,
-    CELEBA=SupportedDataset.CELEBA_Enum
+    CELEBA=SupportedDataset.CELEBA_Enum,
+    ISIC=SupportedDataset.ISIC_Enum
 )
 
 

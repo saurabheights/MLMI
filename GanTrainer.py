@@ -27,7 +27,7 @@ parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan
 parser.add_argument('--num_iterations', type=int, default=10000,
                     help='Optional - Number of iterations for training gan. Default value 10000.')
 
-parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR10', 'CELEBA'],
+parser.add_argument('--dataset', type=str, default='ISIC', choices=['MNIST', 'CIFAR10', 'CELEBA', 'ISIC'],
                     help='Optional - The dataset to choose')
 
 # Data Inflation Study, allows training on smaller subset of selected Dataset
@@ -242,19 +242,16 @@ def train_wgan_iter(D, D_optimizer,
 
 def main():
     dataset_specific_configs = dict(
-        MNIST=dict(
+        ISIC=dict(
             training_batch_size=64,
             z_dim=100,
-            evaluation_classifier_weights='./logs/2019-12-11T13:45:01.171945_model_ConvNetSimple_'
-                                          'dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0018-'
-                                          'model-val_accuracy_99.28404928404929.pth',
-            evaluation_size=10000,
-            evaluation_classifier_std=(0.5,),
-            evaluation_classifier_mean=(0.5,)
+            evaluation_size=100,
+            evaluation_classifier_std=(0.5, 0.5, 0.5),
+            evaluation_classifier_mean=(0.5 ,0.5 , 0.5)
         )
     )
 
-    assert opt.dataset in dataset_specific_configs.keys()
+    #assert opt.dataset in dataset_specific_configs.keys()
     dataset_specific_config = dataset_specific_configs[opt.dataset]
 
     dataset_args = dict(
@@ -323,22 +320,22 @@ def main():
         )
 
     callbacks_args = [
-        dict(InceptionMetric=dict(sample_size=train_data_args['batch_size'],
-                                  total_samples=dataset_specific_config['evaluation_size'],
-                                  classifier_model_args=dict(
-                                      # Use Enums here
-                                      model_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
-                                      model_weights_path=dataset_specific_config['evaluation_classifier_weights'],
-                                      model_constructor_args=dict(
-                                          input_size=dataset_args['name'].value['image_size'],
-                                          number_of_input_channels=dataset_args['name'].value['channels'],
-                                          number_of_classes=dataset_args['name'].value['labels_count'],
-                                      )
-                                  ),
-                                  transform=dict(mean=dataset_specific_config['evaluation_classifier_mean'],
-                                                 std=dataset_specific_config['evaluation_classifier_std']),
-                                  mode='gan')
-             ),
+        # dict(InceptionMetric=dict(sample_size=train_data_args['batch_size'],
+        #                           total_samples=dataset_specific_config['evaluation_size'],
+        #                           classifier_model_args=dict(
+        #                               # Use Enums here
+        #                               model_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
+        #                               model_weights_path=dataset_specific_config['evaluation_classifier_weights'],
+        #                               model_constructor_args=dict(
+        #                                   input_size=dataset_args['name'].value['image_size'],
+        #                                   number_of_input_channels=dataset_args['name'].value['channels'],
+        #                                   number_of_classes=dataset_args['name'].value['labels_count'],
+        #                               )
+        #                           ),
+        #                           transform=dict(mean=dataset_specific_config['evaluation_classifier_mean'],
+        #                                          std=dataset_specific_config['evaluation_classifier_std']),
+        #                           mode='gan')
+        #      ),
         dict(GanSampler=dict(
             write_to_tensorboard=True,
             write_to_disk=True,
