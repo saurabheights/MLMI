@@ -10,6 +10,11 @@ import os
 from dataset.BaseDataset import BaseDataset
 import shutil
 
+from torch.utils.data import Dataset
+
+from utils import logger
+import numpy as np
+
 
 class ISIC(BaseDataset):
 
@@ -33,10 +38,14 @@ class ISIC(BaseDataset):
 
         self.original_training_set = torchvision.datasets.ImageFolder(root=dataset_dir,
                                                                   transform=self.__normalize_transform)
+        # data_iter = iter(self.original_training_set)
+        # images, labels = data_iter.next()
 
-        noise_adder = NoiseAdderDataset(self.original_training_set)
-        self.original_training_set = noise_adder.set_noise(noise=3, interval=1000)
 
+        self.original_training_set = NoiseAdderDataset(self.original_training_set, interval=10)
+
+        print(type(self.original_training_set))
+        #import pdb;pdb.set_trace()
         # Split train data into training and cross validation dataset using 9:1 split ration
         split_ratio = 0.9
         self.trainset, self.validationset = self._uniform_train_val_split(split_ratio)
@@ -55,7 +64,7 @@ class ISIC(BaseDataset):
         # get some random training images
         data_iter = iter(self.train_dataloader)
         print(type(data_iter))
-        images, labels = data_iter.next()
+        images, labels,flag = data_iter.next()
 
         # show images
         super(ISIC, self).imshow(torchvision.utils.make_grid(images))
@@ -129,30 +138,47 @@ class ISIC(BaseDataset):
                     print(path_label)
 
 
-class NoiseAdderDataset:
+class NoiseAdderDataset(Dataset):
+    """
+    Transform a dataset by registering a transform for every n input. Skip transformation by setting the transform to None.
+    Take
+        dataset: the `Dataset` to transform (which must be a `SegData`).
+        interval: interval at which to apply the transform
+        mean: the mean of the noise
+        std: the standard deviation for the noise
+    """
 
-    def __init__(self, dataset):
-        self.dataset = dataset
+    def __init__(self, dataset,interval, mean=0,std=0.1):
+        #super().__init__(dataset)
+        self.ds = dataset
+        self.interval=interval
+        self.mean=mean
+        self.std=std
+        self.targets=dataset.targets
 
-    def get_item(self, item):
-        image, label = self.dataset[item]
-        return image, label
 
-    def get_size_dataset(self):
-        return len(self.dataset)
+    def set_noise(self, img,id):
+        if id%self.interval==0:
+            noise=np.random.normal(loc=self.mean, scale=self.std, size=img.shape)
+            import pdb;pdb.set_trace()
+            img+=torch.tensor(img).float()
+            flag=True
+        else:
+            flag=False
+        return img,flag
 
-    def set_noise(self, noise, interval):
-        data = []
-        for i in range(self.get_size_dataset()):
-            image, label = self.get_item(i)
-            noise_flag = False
-            if i % interval == 0:
-                # TODO : Add noise with the "noise" variable
-                print(i)
-                noise_flag = True
-            data.append([image, label, noise_flag])
 
-        return data
+    def __getitem__(self, idx):
+        # extract data from inner dataset
+        image, label = self.ds[idx]
+
+        noisy_image,flag=self.set_noise(image,idx)
+
+        return noisy_image,label,flag
+
+    def __len__(self):
+        return len(self.ds)
+
 
 
 def main():
