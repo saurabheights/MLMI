@@ -30,10 +30,6 @@ parser.add_argument('--num_iterations', type=int, default=10000,
 parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR10', 'CELEBA'],
                     help='Optional - The dataset to choose')
 
-# Data Inflation Study, allows training on smaller subset of selected Dataset
-parser.add_argument('--training_subset_percentage', type=float, default=1.0,
-                    help='Optional - Subset of data to use for training. Default use whole dataset')
-
 parser.add_argument('--generator_model_path', type=str, required=False, default=None,
                     help='Optional - Path for generator pretrained weights.')
 
@@ -268,10 +264,8 @@ def main():
 
     dataset_args = dict(
         name=MAP_DATASET_TO_ENUM[opt.dataset],
-        training_subset_percentage=opt.training_subset_percentage,
         mean=(0.5,),
         std=(0.5,)
-        # For Data Inflation Study - Set to None to use full dataset
     )
 
     train_data_args = dict(

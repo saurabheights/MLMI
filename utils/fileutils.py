@@ -26,7 +26,6 @@ def get_result_directory_name(timestamp,
     else:
         dirname += f'_model_{generator_model_arch_name.rsplit(sep=".", maxsplit=2)[1]}'
     dirname += f'_dataset_{str(dataset_args["name"]).rsplit(".", maxsplit=1)[1].split("_")[0]}'
-    dirname += f'_subset_{dataset_args["training_subset_percentage"]}'
 
     # Training Hyperparams - Batch Size, Optimizer
     if batch_size:
