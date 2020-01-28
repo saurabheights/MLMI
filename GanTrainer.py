@@ -39,14 +39,19 @@ parser.add_argument('--output_dir', type=str, required=False, default='./logs/',
 parser.add_argument('--gpu', type=int, default=0,
                     help='Optional - If gpu available, which one to use. Default value 0.')
 
+#Parse Contamination arguments
+parser.add_argument('--enable_contamination', action='store_true', help='Optional - ToDo')
+parser.add_argument('--contamination_percentage', type=float, default=0.1, help='Optional - ToDo')
+parser.add_argument('--contamination_std', type=float, default=0.25, help='Optional - ToDo')
+
 opt = parser.parse_args()
 
 
 def infinite_train_gen(dataloader):
     def f():
         while True:
-            for images, targets in dataloader:
-                yield images, targets
+            for samples in dataloader:
+                yield samples
 
     return f()
 
@@ -118,6 +123,14 @@ def train_gan(arguments):
     num_intervals = 1 if is_debug_mode() else int(arguments['num_iterations'] / interval_length)
 
     global_step = 0
+
+    # TO allocate memory required for the GPU during training and validation
+    run_callbacks(callbacks,
+                  model=(G, D),
+                  optimizer=(G_optimizer, D_optimizer),  # To Save optimizer dict for retraining.
+                  mode=CallbackMode.ON_NTH_ITERATION, iteration=global_step)
+    reset_grad()
+
     for it in range(num_intervals):
 
         logger.info(f'Interval {it + 1}/{num_intervals}')
@@ -205,7 +218,8 @@ def train_wgan_iter(D, D_optimizer,
     for i in range(num_critic_iter):
         # Sample data
         z = torch.randn(mb_size, z_dim, 1, 1, device=device)
-        x, _ = next(generator)
+        samples = next(generator)
+        x = samples[0]
         x = x.to(device)
 
         # Dicriminator forward-loss-backward-update
@@ -240,6 +254,11 @@ def main():
         MNIST=dict(
             training_batch_size=64,
             z_dim=100,
+            contamination_args=dict(
+                noise_mean = 0.0,
+                noise_std = opt.contamination_std,
+                contamination_percentage = opt.contamination_percentage
+            ),
             inception_metric=dict(
                 evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
                 evaluation_classifier_weights='logs/2019-12-27T13:09:07.398172_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001_weight_decay_0.005/epoch_0034-model-val_accuracy_98.06859806859806.pth',
@@ -265,7 +284,8 @@ def main():
     dataset_args = dict(
         name=MAP_DATASET_TO_ENUM[opt.dataset],
         mean=(0.5,),
-        std=(0.5,)
+        std=(0.5,),
+        contamination_args=dataset_specific_config['contamination_args'] if opt.enable_contamination else None
     )
 
     train_data_args = dict(

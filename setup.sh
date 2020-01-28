@@ -5,3 +5,4 @@ conda install numpy
 conda install matplotlib
 conda install tensorboard
 conda install -c conda-forge jupyterlab
+conda install -c conda-forge scikit-image

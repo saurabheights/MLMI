@@ -1,4 +1,5 @@
 import math
+import random
 from pprint import pprint
 
 import numpy
@@ -8,6 +9,28 @@ from torch.utils.data import DataLoader
 
 from dataset.BaseDataset import BaseDataset
 from utils import logger
+import skimage
+
+
+class GaussianContaminationDataset(torch.utils.data.Dataset):
+    def __init__(self, dataset, contamination_args):
+        self.dataset = dataset
+        self.contamination_args = contamination_args
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        x, y = self.dataset[index]
+        noisy = False
+        if random.uniform(0, 1) < self.contamination_args['contamination_percentage']:
+            x = skimage.util.random_noise(x,  # Adds noise, not rerturns noise.
+                                          mode='gaussian',
+                                          var=self.contamination_args['noise_std']**2)
+            x = torch.from_numpy(x).type(torch.FloatTensor)
+            noisy = True
+        return x, y, noisy
+
 
 
 class MNIST(BaseDataset):
@@ -59,16 +82,27 @@ class MNIST(BaseDataset):
                                                   download=True,
                                                   transform=self.normalize_transform)
 
+        if dataset_args['contamination_args']:
+            self.trainset = GaussianContaminationDataset(self.trainset, dataset_args['contamination_args'])
+
     def debug(self):
         # get some random training images
         data_iter = iter(self.train_dataloader)
-        images, labels = data_iter.next()
+        samples = data_iter.next()
+
+        if len(samples) == 2:
+            images, labels = samples
+            is_noisy = None
+        else:
+            images, labels, is_noisy = samples
 
         # show images
         super(MNIST, self).imshow(torchvision.utils.make_grid(images))
 
         # print labels
         pprint(' '.join('%s' % self.classes[labels[j]] for j in range(len(images))))
+        if is_noisy is not None:
+            pprint(' '.join('%s' % is_noisy[j].item() for j in range(len(images))))
 
     def get_normalize_transform(self):
         normalize_transform = torchvision.transforms.Compose(
