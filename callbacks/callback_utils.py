@@ -4,9 +4,10 @@ import torch
 
 from callbacks.callbacks import Callbacks, CallbackMode
 from dataset.BaseDataset import BaseDataset
+from metrics.frechet_metric_callback import FrechetInceptionScoreCallback
 from metrics.inception_metric_callback import InceptionScoreCallback
 from models.utils import get_model
-import torchvision
+from visualization.gan_embedding_sampler import GanEmbeddingSampler
 
 from visualization.gan_sampler import GanSampler
 
@@ -63,6 +64,32 @@ def generate_inception_metric_callback(callback_args, device, outdir):
         raise NotImplementedError('generate_inception_metric_callback for classification is not implemented')
 
 
+def generate_frechet_metric_callback(callback_args, device, outdir, dataset):
+    mean = callback_args['transform']['mean']
+    std = callback_args['transform']['std']
+    total_samples = callback_args['total_samples']
+    batch_size = callback_args['sample_size']
+    classifier_model = get_model(callback_args['classifier_model_args'])
+    classifier_model_layer = callback_args['classifier_model_layer']
+    if classifier_model_layer:
+        classifier_model = torch.nn.Sequential(*list(classifier_model.children())[:classifier_model_layer])
+    classifier_model = classifier_model.to(device)
+    transform = batch_normalize_transform(mean, std)
+    return FrechetInceptionScoreCallback(outdir=outdir,
+                                         classifier=classifier_model,
+                                         batch_size=batch_size,
+                                         total_samples=total_samples,
+                                         transform=transform,
+                                         device=device,
+                                         dataset=dataset)
+
+
+def generate_gan_embedding_sampler_callback(callback_args, device, outdir):
+    return GanEmbeddingSampler(callback_args,
+                               device,
+                               outdir)
+
+
 def generate_gan_sampler_callback(callback_args, device, outdir):
     return GanSampler(callback_args, device, outdir)
 
@@ -84,5 +111,9 @@ def generate_callbacks(arguments: dict,
                                                                 outdir))
         elif key == 'GanSampler':
             callbacks.append(generate_gan_sampler_callback(callback_arg[key], device, outdir))
+        elif key == 'FrechetMetric':
+            callbacks.append(generate_frechet_metric_callback(callback_arg[key], device, outdir, dataset))
+        elif key == 'GanEmbeddingSampler':
+            callbacks.append(generate_gan_embedding_sampler_callback(callback_arg[key], device, outdir))
 
     return callbacks

@@ -8,6 +8,7 @@ To evaluate real dataset, pass generator model as None in set_model. See callbac
 
 Path to trained model on training dataset are hardcoded for now.
 """
+import logging
 import os
 import time
 
@@ -36,7 +37,7 @@ class InceptionScoreCallback(Callbacks):
         super().__init__()
         self.outdir = outdir
         self.device = device
-        self.classifier = classifier
+        self.classifier = classifier.to(device)
         self.dataset = dataset
         self.batch_size = batch_size
         self.total_samples = total_samples
@@ -46,6 +47,7 @@ class InceptionScoreCallback(Callbacks):
 
         os.makedirs(self.outdir, exist_ok=True)
         self.tensorboard_writer = initialize_tensorboard(self.outdir)
+        self.best_inception_score=1
 
     def on_nth_iteration(self, iteration):
         """
@@ -54,6 +56,11 @@ class InceptionScoreCallback(Callbacks):
         """
         inception_score = self.compute_inception_score()
         logger.info(f'Inception score at iteration {iteration} is {inception_score}')
+        if self.mode != 'classifier' and inception_score > self.best_inception_score:
+            torch.save(self.model[0].state_dict(), os.path.join(self.outdir, f'./G-iter_{iteration}_inception_score_{inception_score}.pth'))
+            torch.save(self.model[1].state_dict(), os.path.join(self.outdir, f'./D-iter_{iteration}_inception_score_{inception_score}.pth'))
+            self.best_inception_score = inception_score
+
         self.tensorboard_writer.save_scalar('InceptionScore', inception_score, iteration)
 
     def metric_ops(self):
@@ -90,7 +97,7 @@ class InceptionScoreCallback(Callbacks):
                 for images, labels in tqdm(self.dataset.test_dataloader):
                     batch_inception_score = self.calculate_score(self.classifier(images.to(self.device)))
                     score += batch_inception_score
-            elif self.mode == 'gan':
+            else:
                 num_batch = int(self.total_samples / self.batch_size)
                 for _ in range(num_batch):
                     score += self.metric_ops()
@@ -127,9 +134,14 @@ if __name__ == '__main__':
                                           train_data_args,
                                           val_data_args)
 
-    eval_model.load_state_dict(torch.load('./logs/2019-12-11T13:45:01.171945_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0018-model-val_accuracy_99.28404928404929.pth'))
+    eval_model.load_state_dict(torch.load('./logs/2019-12-22T02:24:08.329024_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/epoch_0032-model-val_accuracy_99.11754911754912.pth'))
+    outdir = './logs/2019-12-22T02:24:08.329024_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001/'
+    device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
+
+    logger.init(outdir, logging.INFO)
     start = time.time()
-    callback = InceptionScoreCallback(eval_model, dataset=dataset, mode='classifier', outdir='./logs/inceptionscore')
-    print('\nInception Score of real dataset is ', callback.compute_inception_score())
+    callback = InceptionScoreCallback(eval_model, device=device,
+                                      dataset=dataset, mode='classifier', outdir=outdir)
+    logger.info(f'Inception Score of real dataset is {callback.compute_inception_score()}')
     end = time.time()
-    print(f'Time taken = {end - start}')
+    logger.info(f'Time taken = {end - start}')

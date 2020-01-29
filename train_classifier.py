@@ -20,14 +20,14 @@ from models.utils import get_model
 from optimizer.utils import create_optimizer
 from utils import logger
 from utils.RunningAverage import RunningAverage
-from utils.fileutils import make_results_dir
+from utils.fileutils import make_results_dir, delete_old_file
 from utils.progress_bar import ProgressBar
 from utils.tensorboard_writer import initialize_tensorboard, close_tensorboard
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epoch', type=int, default=50,
                     help='Number of epochs for training. Default 50.')
-parser.add_argument('--dataset', type=str, default='CELEBA', choices=['CIFAR10', 'MNIST', 'CELEBA', 'ISIC'],
+parser.add_argument('--dataset', type=str, default='ISIC', choices=['CIFAR10', 'MNIST', 'CELEBA', 'ISIC'],
                     help='Required - The dataset to choose')
 
 # Data Inflation Study, allows training on smaller subset of selected Dataset
@@ -94,6 +94,9 @@ def objective(arguments):
     """ Pipeline - loop over the dataset multiple times """
     max_validation_accuracy = 0
     itr = 0
+
+    best_model_path = None
+    delete_old_models = True
 
     run_callbacks(callbacks, model=model, optimizer=optimizer, mode=CallbackMode.ON_TRAIN_BEGIN)
     for epoch in range(arguments['nb_epochs']):
@@ -167,8 +170,10 @@ def objective(arguments):
 
             """ Save Model """
             if val_accuracy > max_validation_accuracy:
-                torch.save(model.state_dict(),
-                           os.path.join(outdir, f'epoch_{epoch:04}-model-val_accuracy_{val_accuracy}.pth'))
+                if delete_old_models and best_model_path:
+                    delete_old_file(best_model_path)
+                best_model_path = os.path.join(outdir, f'epoch_{epoch:04}-model-val_accuracy_{val_accuracy}.pth')
+                torch.save(model.state_dict(), best_model_path)
                 max_validation_accuracy = val_accuracy
 
         tensorboard_writer.flush()
@@ -197,16 +202,12 @@ def main():
         ),
         CELEBA=dict(
             training_batch_size=64,
-            # Size of z latent vector (i.e. size of generator input)
-            nz=100,
-            random_seed=999,
-            # Size of feature maps in generator
-            ngf=64,
-            # Size of feature maps in discriminator
-            ndf=64,
-            lr=0.0002,
-            beta1=0.5
         ),
+        ISIC = dict(
+            training_batch_size=64,
+            mean=(0.5, ),
+            std=(0.5, )
+        )
     )
 
     assert opt.dataset in dataset_specific_configs.keys()
