@@ -112,14 +112,14 @@ class ISIC(BaseDataset):
                     line_count += 1
                 else:
                     print(f'row names are {", ".join(row)}')
-                    fileName = dataset_dir + "/images/" + row[0] + ".jpg"
+                    fileName = dataset_dir + row[0] + ".jpg"
                     path_label = ""
                     if os.path.exists(fileName):
                         for i in range(1,8):
                             if (row[i] == '1.0'):
                                 path_label = self.classes[i-1]
                                 break
-                        path_label = dataset_dir+ "/images/" + path_label
+                        path_label = dataset_dir + path_label
                         if os.path.exists(path_label) == False:
                             os.mkdir(path_label)
                         shutil.move(fileName, path_label)
@@ -147,7 +147,8 @@ def main():
         validate_step_size=1,
     )
     dataset = ISIC(dataset_args, train_data_args, val_data_args)
-    dataset.debug()
+    # dataset.debug()
+    dataset.csv_loader()
 
 if __name__== "__main__":
   main()
