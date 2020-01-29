@@ -18,7 +18,7 @@ class ISIC(BaseDataset):
                  train_data_args,
                  val_data_args):
         super(ISIC, self).__init__(train_data_args, val_data_args)
-        dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
+        dataset_dir = 'home/student/sumant/MLMI/data/' + self.__class__.__name__
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
         mean = (0.5, 0.5, 0.5)
@@ -100,7 +100,7 @@ class ISIC(BaseDataset):
         return uniform_subset
 
     def csv_loader(self):
-        label_path = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__ +\
+        label_path = 'home/student/sumant/MLMI/data/' + self.__class__.__name__ +\
                      "/labels/ISIC2018_Task3_Training_GroundTruth.csv"
         dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
         with open(label_path, 'r') as f:
