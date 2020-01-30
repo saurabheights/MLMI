@@ -63,7 +63,7 @@ def objective(arguments):
     np.random.seed(arguments['random_seed'])  # Set for numpy
 
     """ Set device - cpu or gpu """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     logger.info(f'Using device - {device}')
 
     """ Load Model with weights(if available) """
@@ -248,7 +248,7 @@ def main():
 
     optimizer_args = dict(
         name='torch.optim.Adam',
-        lr=1e-3
+        lr=1e-5
     )
 
     callbacks_args = []

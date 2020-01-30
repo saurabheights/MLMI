@@ -21,19 +21,19 @@ class ISIC(BaseDataset):
         dataset_dir = '/home/student/sumant/MLMI/data/' + self.__class__.__name__
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
-        #mean = (0.5, 0.5, 0.5)
-        #std = (0.5, 0.5, 0.5)
-        ##mean = [0.49139968, 0.48215827, 0.44653124]
-        mean = [0.4914, 0.4822, 0.4465]
+        mean = (0.5, 0.5, 0.5)
+        std = (0.5, 0.5, 0.5)
+        # # dsMean = [0.49139968, 0.48215827, 0.44653124]
+        # dsMean = [0.4914, 0.4822, 0.4465]
         # # dsStd = [0.24703233, 0.24348505, 0.26158768]
-        std = (0.2023, 0.1994, 0.2010)
+        # dsStd = [0.2023, 0.1994, 0.2010]
         self.__normalize_transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize(mean, std)])
 
         # Normalization transform does (x - mean) / std
         # To denormalize use mean* = (-mean/std) and std* = (1/std)
-        self.denormalization_transform = torchvision.transforms.Normalize((-2.4291, -2.4183, -2.2213), (4.9432, 5.0151, 4.9751))
+        self.denormalization_transform = torchvision.transforms.Normalize((-1, -1, -1), (2, 2, 2))
 
         self.original_training_set = torchvision.datasets.ImageFolder(root=dataset_dir,
                                                                   transform=self.__normalize_transform)
@@ -58,7 +58,7 @@ class ISIC(BaseDataset):
         images, labels = data_iter.next()
 
         # show images
-#        super(ISIC, self).imshow(torchvision.utils.make_grid(images))
+        super(ISIC, self).imshow(torchvision.utils.make_grid(images))
 
         # print labels
         pprint(' '.join('%s' % self.classes[labels[j]] for j in range(len(images))))
@@ -99,56 +99,56 @@ class ISIC(BaseDataset):
         uniform_subset = torch.utils.data.Subset(self.full_training_set, indices)
         return uniform_subset
 
-    def csv_loader(self):
-        label_path = 'home/student/sumant/MLMI/data/' + self.__class__.__name__ +\
-                     "/labels/ISIC2018_Task3_Training_GroundTruth.csv"
-        dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
-        with open(label_path, 'r') as f:
-            reader = csv.reader(f)
-            line_count = 0
-            for row in reader:
-                if line_count==0:
-                    print(f'Column names are {", ".join(row)}')
-                    line_count += 1
-                else:
-                    print(f'row names are {", ".join(row)}')
-                    fileName = dataset_dir + row[0] + ".jpg"
-                    path_label = ""
-                    if os.path.exists(fileName):
-                        for i in range(1,8):
-                            if (row[i] == '1.0'):
-                                path_label = self.classes[i-1]
-                                break
-                        path_label = dataset_dir + path_label
-                        if os.path.exists(path_label) == False:
-                            os.mkdir(path_label)
-                        shutil.move(fileName, path_label)
-                    line_count += 1
-                    print(fileName)
-                    print("copied to")
-                    print(path_label)
+def csv_loader():
+    classes = ['MEL', 'NV', 'BCC', 'AKIEC', 'BKL', 'DF', 'VASC']
+    label_path = '/home/student/sumant/MLMI/data/ISIC2018_Task3_Training_GroundTruth/ISIC2018_Task3_Training_GroundTruth.csv'
+    dataset_dir = '/home/student/sumant/MLMI/data/ISIC/'
+    with open(label_path, 'r') as f:
+        reader = csv.reader(f)
+        line_count = 0
+        for row in reader:
+            if line_count==0:
+                print(f'Column names are {", ".join(row)}')
+                line_count += 1
+            else:
+                print(f'row names are {", ".join(row)}')
+                fileName = dataset_dir + row[0] + ".jpg"
+                path_label = ""
+                if os.path.exists(fileName):
+                    for i in range(1,8):
+                        if (row[i] == '1.0'):
+                            path_label = classes[i-1]
+                            break
+                    path_label = dataset_dir + path_label
+                    if os.path.exists(path_label) == False:
+                        os.mkdir(path_label)
+                    shutil.move(fileName, path_label)
+                line_count += 1
+                print(fileName)
+                print("copied to")
+                print(path_label)
 
 
 def main():
 
-    dataset_args = dict(
-        name=ISIC,
-        training_subset_percentage=80,
-        # For Data Inflation Study - Set to None to use full dataset
-    )
-    train_data_args = dict(
-        batch_size=64,
-        shuffle=True,
-        to_train=True,
-    )
-    val_data_args = dict(
-        batch_size=256,
-        shuffle=False,
-        validate_step_size=1,
-    )
-    dataset = ISIC(dataset_args, train_data_args, val_data_args)
+#    dataset_args = dict(
+#        name=ISIC,
+#        training_subset_percentage=80,
+#        # For Data Inflation Study - Set to None to use full dataset
+#    )
+#    train_data_args = dict(
+#        batch_size=64,
+#        shuffle=True,
+#        to_train=True,
+#    )
+#    val_data_args = dict(
+#        batch_size=256,
+#        shuffle=False,
+#        validate_step_size=1,
+#    )
+#    dataset = ISIC(dataset_args, train_data_args, val_data_args)
     # dataset.debug()
-    dataset.csv_loader()
+    csv_loader()
 
 if __name__== "__main__":
   main()
