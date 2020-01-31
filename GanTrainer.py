@@ -171,6 +171,7 @@ def train_gan_iter(D, D_optimizer, G, G_optimizer,
     images, _ = next(generator)
     images = images.to(device)
     outputs = D(images)
+    import pdb;pdb.set_trace()
     D_loss_real = loss(outputs.squeeze(), real_labels)
 
     # Compute BCE Loss using fake images
@@ -242,7 +243,7 @@ def train_wgan_iter(D, D_optimizer,
 def main():
     dataset_specific_configs = dict(
         ISIC=dict(
-            training_batch_size=64,
+            training_batch_size=8,
             z_dim=100,
             evaluation_size=100,
             evaluation_classifier_std=(0.5, 0.5, 0.5),
