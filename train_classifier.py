@@ -248,7 +248,8 @@ def main():
 
     optimizer_args = dict(
         name='torch.optim.Adam',
-        lr=1e-3
+        # lr=1e-3
+        lr=1e-5
     )
 
     callbacks_args = []
@@ -262,7 +263,8 @@ def main():
         optimizer_args=optimizer_args,
         callbacks_args=callbacks_args,
         outdir=opt.output_dir,
-        nb_epochs=opt.num_epoch,
+        # nb_epochs=opt.num_epoch,
+        nb_epochs=12,
         random_seed=dataset_specific_config.get('random_seed', 42),
         mode='classification'
     )

@@ -18,7 +18,7 @@ class ISIC(BaseDataset):
                  train_data_args,
                  val_data_args):
         super(ISIC, self).__init__(train_data_args, val_data_args)
-        dataset_dir = 'home/student/sumant/MLMI/data/' + self.__class__.__name__
+        dataset_dir = 'data/' + self.__class__.__name__
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
         mean = (0.5, 0.5, 0.5)
@@ -27,6 +27,7 @@ class ISIC(BaseDataset):
         # dsMean = [0.4914, 0.4822, 0.4465]
         # # dsStd = [0.24703233, 0.24348505, 0.26158768]
         # dsStd = [0.2023, 0.1994, 0.2010]
+
         self.__normalize_transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize(mean, std)])
@@ -148,7 +149,7 @@ def main():
     )
     dataset = ISIC(dataset_args, train_data_args, val_data_args)
     # dataset.debug()
-    dataset.csv_loader()
+    # dataset.csv_loader()
 
 if __name__== "__main__":
   main()
