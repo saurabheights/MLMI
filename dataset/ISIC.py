@@ -18,7 +18,7 @@ class ISIC(BaseDataset):
                  train_data_args,
                  val_data_args):
         super(ISIC, self).__init__(train_data_args, val_data_args)
-        dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
+        dataset_dir = 'data/' + self.__class__.__name__
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
         #mean = (0.5, 0.5, 0.5)
