@@ -136,6 +136,34 @@ class BaseDataset:
         assert not set(training_indices) & set(validation_indices)
         return uniform_training_subset, uniform_validation_subset
 
+    def _uniform_train_val_test_split(self, train_ratio, val_ratio):
+        targets = self.original_training_set.targets
+        if type(targets) == list:
+            targets = numpy.array(targets)
+            labels = targets
+        elif type(targets) == torch.tensor or type(targets) == torch.Tensor:
+            labels = targets.numpy()
+        training_indices = []
+        validation_indices = []
+        test_indices = []
+        for i in range(len(self.classes)):
+            label_indices = numpy.argwhere(labels == i)
+            samples_per_label = int(train_ratio * len(label_indices))
+            samples_per_label_test = int((train_ratio + val_ratio) * len(label_indices))
+            training_label_indices = label_indices[:samples_per_label]
+            validation_label_indices = label_indices[samples_per_label:samples_per_label_test]
+            test_label_indices = label_indices[samples_per_label_test:]
+            training_indices.extend(training_label_indices.squeeze().tolist())
+            validation_indices.extend(validation_label_indices.squeeze().tolist())
+            test_indices.extend(test_label_indices.squeeze().tolist())
+            assert not set(training_label_indices.ravel().tolist()) & set(validation_label_indices.ravel().tolist()) & set(test_label_indices.ravel().tolist())
+
+        uniform_training_subset = torch.utils.data.Subset(self.original_training_set, training_indices)
+        uniform_validation_subset = torch.utils.data.Subset(self.original_training_set, validation_indices)
+        uniform_test_subset = torch.utils.data.Subset(self.original_training_set, test_indices)
+        assert not set(training_indices) & set(validation_indices) & set(test_indices)
+        return uniform_training_subset, uniform_validation_subset, uniform_test_subset
+
     def get_uniform_subset_by_percentage(self, training_subset_percentage):
         """
         Creates a subset with certain %age of total number of samples per class.

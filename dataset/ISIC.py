@@ -42,8 +42,8 @@ class ISIC(BaseDataset):
                                                                   transform=self.__normalize_transform)
 
         # Split train data into training and cross validation dataset using 9:1 split ration
-        split_ratio = 0.9
-        self.trainset, self.validationset = self._uniform_train_val_split(split_ratio)
+        split_ratio = 0.8
+        self.trainset, self.validationset, self.testset = self._uniform_train_val_test_split(split_ratio, 0.1)
         self.full_training_set = self.trainset
 
         if dataset_args.get('training_subset_percentage'):
