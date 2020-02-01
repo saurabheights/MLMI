@@ -83,7 +83,7 @@ def train_gan(arguments):
     D_optimizer = create_optimizer(D.parameters(), arguments['discriminator_optimizer_args'])
 
     """ Create Loss """
-    loss = torch.nn.BCELoss().to(device=device)  # GAN
+    loss = torch.nn.BCEWithLogitsLoss().to(device=device)  # GAN
 
     """ Load parameters for the Dataset """
     dataset: BaseDataset = create_dataset(arguments['dataset_args'],
@@ -171,7 +171,7 @@ def train_gan_iter(D, D_optimizer, G, G_optimizer,
     images, _ = next(generator)
     images = images.to(device)
     outputs = D(images)
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     D_loss_real = loss(outputs.squeeze(), real_labels)
 
     # Compute BCE Loss using fake images

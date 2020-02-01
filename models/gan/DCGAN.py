@@ -26,13 +26,14 @@ class Generator(torch.nn.Module):
             nn.ReLU(True),
 
             # State (256x16x16)
-            nn.ConvTranspose2d(in_channels=256, out_channels=channels, kernel_size=4, stride=2, padding=1))
+            nn.ConvTranspose2d(in_channels=256, out_channels=channels, kernel_size=198, stride=2, padding=1))
             # output of main module --> Image (Cx32x32)
 
         self.output = nn.Tanh()
 
     def forward(self, x):
         x = self.main_module(x)
+        # import pdb;pdb.set_trace()
         self.embeddings = x.detach().clone()  # consumes slightly extra memory
         return self.output(x)
 
@@ -67,9 +68,10 @@ class Discriminator(torch.nn.Module):
 
     def forward(self, x):
         x = self.main_module(x)
+        # import pdb;pdb.set_trace()
         return self.output(x)
 
     def feature_extraction(self, x):
         # Use discriminator for feature extraction then flatten to vector of 16384 features
         x = self.main_module(x)
-        return x.view(-1, 1024*4*4)
+        return x.view(-1, 1024*28*28)

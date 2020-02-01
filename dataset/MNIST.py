@@ -63,7 +63,7 @@ class MNIST(BaseDataset):
         # get some random training images
         data_iter = iter(self.train_dataloader)
         images, labels = data_iter.next()
-
+        import pdb;pdb.set_trace()
         # show images
         super(MNIST, self).imshow(torchvision.utils.make_grid(images))
 
@@ -112,3 +112,27 @@ class MNIST(BaseDataset):
 
         uniform_subset = torch.utils.data.Subset(self.full_training_set, indices)
         return uniform_subset
+
+def main():
+
+    dataset_args = dict(
+        name=MNIST,
+        training_subset_percentage=80,
+        # For Data Inflation Study - Set to None to use full dataset
+    )
+    train_data_args = dict(
+        batch_size=64,
+        shuffle=True,
+        to_train=True,
+    )
+    val_data_args = dict(
+        batch_size=256,
+        shuffle=False,
+        validate_step_size=1,
+    )
+    dataset = MNIST(dataset_args, train_data_args, val_data_args)
+    dataset.debug()
+    # dataset.csv_loader()
+
+if __name__== "__main__":
+  main()

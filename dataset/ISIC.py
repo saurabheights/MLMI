@@ -18,7 +18,7 @@ class ISIC(BaseDataset):
                  train_data_args,
                  val_data_args):
         super(ISIC, self).__init__(train_data_args, val_data_args)
-        dataset_dir = 'data/' + self.__class__.__name__
+        dataset_dir = '/home/saosurvivor/Projects/MLMI/MLMI/data/' + self.__class__.__name__
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
         #mean = (0.5, 0.5, 0.5)
@@ -30,7 +30,8 @@ class ISIC(BaseDataset):
 
         std = (0.2023, 0.1994, 0.2010)
         self.__normalize_transform = torchvision.transforms.Compose(
-            [torchvision.transforms.ToTensor(),
+            [torchvision.transforms.Resize((224,224)),
+             torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize(mean, std)])
 
         # Normalization transform does (x - mean) / std
@@ -58,9 +59,10 @@ class ISIC(BaseDataset):
         # get some random training images
         data_iter = iter(self.train_dataloader)
         images, labels = data_iter.next()
+        # import pdb;pdb.set_trace()
 
         # show images
-#        super(ISIC, self).imshow(torchvision.utils.make_grid(images))
+        # super(ISIC, self).imshow(torchvision.utils.make_grid(images))
 
         # print labels
         pprint(' '.join('%s' % self.classes[labels[j]] for j in range(len(images))))
@@ -149,7 +151,7 @@ def main():
         validate_step_size=1,
     )
     dataset = ISIC(dataset_args, train_data_args, val_data_args)
-    # dataset.debug()
+    dataset.debug()
     # dataset.csv_loader()
 
 if __name__== "__main__":
