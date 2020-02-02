@@ -30,7 +30,7 @@ class ISIC(BaseDataset):
 
         std = (0.2023, 0.1994, 0.2010)
         self.__normalize_transform = torchvision.transforms.Compose(
-            [torchvision.transforms.Resize((224,224)),
+            [torchvision.transforms.Resize((64,64)),
              torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize(mean, std)])
 
