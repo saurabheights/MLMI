@@ -250,7 +250,7 @@ def main():
             evaluation_classifier_mean=(0.5 ,0.5 , 0.5),
             inception_metric=dict(
                 evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
-                evaluation_classifier_weights='logs/2020-01-30T19:52:17.106300_train_mode_classification_model_ConvNetSimple_dataset_ISIC_subset_1.0_bs_64_name_Adam_lr_1e-05/epoch_0003-model-val_accuracy_66.76616915422886.pth',
+                evaluation_classifier_weights='logs/2020-02-02T22:55:28.368389_train_mode_classification_model_ConvNetSimple_dataset_ISIC_subset_1.0_bs_64_name_Adam_lr_1e-05/epoch_0003-model-val_accuracy_67.0.pth',
                 classifier_model_layer=4,
                 evaluation_size=10000,
                 evaluation_classifier_std=(0.5,),
