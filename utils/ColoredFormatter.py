@@ -69,8 +69,8 @@ default_log_colors = {
     'DEBUG': 'white',
     'INFO': '',
     'WARNING': 'yellow',
-    'ERROR': 'red,bg_purple',
-    'CRITICAL': 'bold_red,bg_purple',
+    'ERROR': 'red',
+    'CRITICAL': 'bold_red',
 }
 
 # The default format to use for each style
