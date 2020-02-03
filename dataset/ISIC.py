@@ -21,14 +21,14 @@ class ISIC(BaseDataset):
         dataset_dir = 'data/' + self.__class__.__name__
         #ToDo - This is CIFAR code copy pasted. Fix it.
         # ToDo - Fix mean and std.
-        #mean = (0.5, 0.5, 0.5)
-        #std = (0.5, 0.5, 0.5)
+        mean = (0.5, 0.5, 0.5)
+        std = (0.5, 0.5, 0.5)
         ##mean = [0.49139968, 0.48215827, 0.44653124]
-        mean = [0.4914, 0.4822, 0.4465]
+        # mean = [0.4914, 0.4822, 0.4465]
         # # dsStd = [0.24703233, 0.24348505, 0.26158768]
         # dsStd = [0.2023, 0.1994, 0.2010]
 
-        std = (0.2023, 0.1994, 0.2010)
+        # std = (0.2023, 0.1994, 0.2010)
         self.__normalize_transform = torchvision.transforms.Compose(
             [torchvision.transforms.Resize((64,64)),
              torchvision.transforms.ToTensor(),
@@ -36,7 +36,7 @@ class ISIC(BaseDataset):
 
         # Normalization transform does (x - mean) / std
         # To denormalize use mean* = (-mean/std) and std* = (1/std)
-        self.denormalization_transform = torchvision.transforms.Normalize((-2.4291, -2.4183, -2.2213), (4.9432, 5.0151, 4.9751))
+        self.denormalization_transform = torchvision.transforms.Normalize((-1, -1, -1), (2, 2, 2))
 
         self.original_training_set = torchvision.datasets.ImageFolder(root=dataset_dir,
                                                                   transform=self.__normalize_transform)

@@ -316,23 +316,23 @@ def main():
     if opt.mode == 'dcgan':
         generator_optimizer_args = dict(
             name='torch.optim.Adam',
-            lr=5e-5,
+            lr=0.0002,
             betas=(0.5, 0.999)
         )
 
         discriminator_optimizer_args = dict(
             name='torch.optim.SGD',
-            lr=5e-5
+            lr=0.0002
         )
     elif opt.mode == 'wgan-wp':
         generator_optimizer_args = dict(
             name='torch.optim.RMSprop',
-            lr=0.00005
+            lr=0.0002
         )
 
         discriminator_optimizer_args = dict(
             name='torch.optim.RMSprop',
-            lr=0.00005
+            lr=0.0002
         )
 
     dataset_inception_metric = dataset_specific_config['inception_metric']
