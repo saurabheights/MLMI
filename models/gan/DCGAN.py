@@ -52,7 +52,7 @@ class Discriminator(torch.nn.Module):
             nn.BatchNorm2d(num_features=128),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(in_channels=channels, out_channels=256, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(num_features=256),
             nn.LeakyReLU(0.2, inplace=True),
 
@@ -73,6 +73,7 @@ class Discriminator(torch.nn.Module):
 
 
     def forward(self, x):
+        # import pdb;pdb.set_trace()
         input = self.main_module(x)
         return self.output(input)
 
