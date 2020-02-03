@@ -21,8 +21,8 @@ from utils.tensorboard_writer import initialize_tensorboard
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp'],
-                    help='Optional - To train dcgan or wgan. Default value dcgan.')
+parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp', 'wgan-noise-adversarial'],
+                    help='Optional - To train dcgan or wgan or wgan with noise removal. Default value dcgan.')
 
 parser.add_argument('--num_iterations', type=int, default=10000,
                     help='Optional - Number of iterations for training gan. Default value 10000.')
@@ -43,6 +43,8 @@ parser.add_argument('--gpu', type=int, default=0,
 parser.add_argument('--enable_contamination', action='store_true', help='Optional - ToDo')
 parser.add_argument('--contamination_percentage', type=float, default=0.1, help='Optional - ToDo')
 parser.add_argument('--contamination_std', type=float, default=0.25, help='Optional - ToDo')
+
+parser.add_argument('--contamination_loss_weight', type=float, default=1.0, help='Optional - ToDo')
 
 opt = parser.parse_args()
 
@@ -147,6 +149,12 @@ def train_gan(arguments):
             elif arguments['mode'] == 'wgan-wp':
                 D_loss, G_loss = train_wgan_iter(D, D_optimizer, G, G_optimizer, device,
                                                  generator, batch_size, reset_grad, z_dim)
+            elif arguments['mode'] == 'wgan-noise-adversarial':
+                D_loss, G_loss = train_noisy_wgan_iter(D, D_optimizer, G, G_optimizer, device,
+                                                       generator, batch_size, reset_grad, z_dim,
+                                                       tensorboard_writer, global_step,
+                                                       contamination_loss_weight=arguments['contamination_loss_weight'])
+
 
             # Log D_Loss and G_Loss in progress_bar
             t.set_postfix(D_Loss=D_loss.data.cpu().item(),
@@ -249,6 +257,68 @@ def train_wgan_iter(D, D_optimizer,
     return D_loss, G_loss
 
 
+def train_noisy_wgan_iter(D, D_optimizer,
+                          G, G_optimizer,
+                          device, generator, mb_size, reset_grad, z_dim, tensorboard_writer, global_step,
+                          num_critic_iter=10, contamination_loss_weight=1):
+    D_loss = 0
+    assert num_critic_iter >= 5
+    for i in range(num_critic_iter):
+        # Sample data
+        z = torch.randn(mb_size, z_dim, 1, 1, device=device)
+        x, label, noisy = next(generator)
+        x = x.to(device)
+
+        clean = ~noisy
+
+        # Dicriminator forward-loss-backward-update
+        G_sample = G(z)
+        D_real, D_real_clean_and_noisy = D(x)
+        D_fake, D_fake_noisy = D(G_sample)
+
+        D_real_vs_fake_loss = -(torch.mean(D_real) - torch.mean(D_fake))
+
+        D_real_clean_mean, D_real_noisy_mean = 0, 0
+        if clean.any():
+            D_real_clean_mean = torch.mean(D_real_clean_and_noisy[clean])
+        if noisy.any():
+            D_real_noisy_mean = torch.mean(D_real_clean_and_noisy[noisy])
+
+        # We assume all fake samples are noisy. Isn't this counterintuitive to Discriminator
+        # D_noisy_vs_clean_loss = -contamination_loss_weight * (D_real_clean_mean -
+        #                                                       D_real_noisy_mean -
+        #                                                       torch.mean(D_fake_noisy))
+
+        # Train only discriminator on real data
+        D_noisy_vs_clean_loss = -contamination_loss_weight * (D_real_clean_mean - D_real_noisy_mean)
+
+        D_loss = D_real_vs_fake_loss + D_noisy_vs_clean_loss
+        D_loss.backward()
+        D_optimizer.step()
+
+        # Weight clipping
+        for p in D.parameters():
+            p.data.clamp_(-0.01, 0.01)
+
+        reset_grad()
+
+    tensorboard_writer.save_scalars(f'W_GAN_NOISE_ADVERSARIAL_Critic_Loss',
+                                    {
+                                        'noisy_vs_clean_loss': D_noisy_vs_clean_loss.data.cpu().item(),
+                                        'real_vs_fake_loss': D_real_vs_fake_loss.data.cpu().item()},
+                                    global_step)
+
+    # Generator forward-loss-backward-update
+    z = torch.randn(mb_size, z_dim, 1, 1).to(device)
+    G_sample = G(z)
+    D_fake, D_fake_noisy = D(G_sample)
+    G_loss = -torch.mean(D_fake) - contamination_loss_weight * torch.mean(D_fake_noisy)
+    G_loss.backward()
+    G_optimizer.step()
+    reset_grad()
+    return D_real_vs_fake_loss, G_loss
+
+
 def main():
     dataset_specific_configs = dict(
         MNIST=dict(
@@ -331,7 +401,7 @@ def main():
             name='torch.optim.SGD',
             lr=5e-5
         )
-    elif opt.mode == 'wgan-wp':
+    elif opt.mode in ['wgan-wp', 'wgan-noise-adversarial']:
         generator_optimizer_args = dict(
             name='torch.optim.RMSprop',
             lr=0.00005
@@ -393,7 +463,8 @@ def main():
         callbacks_args=callbacks_args,
         outdir=opt.output_dir,
         num_iterations=opt.num_iterations,
-        random_seed=dataset_specific_config.get('random_seed', random.randint(0, 100))
+        random_seed=dataset_specific_config.get('random_seed', random.randint(0, 1000)),
+        contamination_loss_weight=opt.contamination_loss_weight
     )
 
     try:
