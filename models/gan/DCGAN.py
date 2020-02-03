@@ -48,6 +48,7 @@ class DcGanGenerator(nn.Module):
     def __init__(self, nz=100, ngf=64, channels=1):
         super().__init__()
         self.nz = nz
+        self.z_dim = nz
         self.main = nn.Sequential(
             # input is Z, going into a convolution
             nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
