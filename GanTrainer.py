@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp'],
                     help='Optional - To train dcgan or wgan. Default value dcgan.')
 
-parser.add_argument('--num_iterations', type=int, default=10000,
+parser.add_argument('--num_iterations', type=int, default=50000,
                     help='Optional - Number of iterations for training gan. Default value 10000.')
 
 parser.add_argument('--dataset', type=str, default='ISIC', choices=['MNIST', 'CIFAR10', 'CELEBA', 'ISIC'],
@@ -204,9 +204,9 @@ def train_gan_iter(D, D_optimizer, G, G_optimizer,
 
 def train_wgan_iter(D, D_optimizer,
                     G, G_optimizer,
-                    device, generator, mb_size, reset_grad, z_dim, num_critic_iter=1):
+                    device, generator, mb_size, reset_grad, z_dim, num_critic_iter=5):
     D_loss = 0
-    assert num_critic_iter >= 1
+    assert num_critic_iter >= 5
     for i in range(num_critic_iter):
         # Sample data
         z = torch.randn(mb_size, z_dim, 1, 1, device=device)
