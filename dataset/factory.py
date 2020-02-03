@@ -16,7 +16,7 @@ class SupportedDataset(Enum):
 
     MNIST_Enum = dict(
         dataloader=MNIST,
-        image_size=(32, 32),  # Used for model FC layer.
+        image_size=(64, 64),  # Used for model FC layer.
         channels=1,
         training_size=60000,
         labels_count=10

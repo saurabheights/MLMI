@@ -106,7 +106,7 @@ class MNIST(BaseDataset):
 
     def get_normalize_transform(self):
         normalize_transform = torchvision.transforms.Compose(
-            [torchvision.transforms.Scale(32),
+            [torchvision.transforms.Scale(64),
              torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize(self.mean, self.std)])
         return normalize_transform

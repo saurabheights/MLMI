@@ -59,6 +59,15 @@ def infinite_train_gen(dataloader):
 
     return f()
 
+# custom weights initialization called on netG and netD
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        m.weight.data.normal_(0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)
+
 
 def train_gan(arguments):
     """ Setup result directory and enable logging to file in it """
@@ -82,6 +91,10 @@ def train_gan(arguments):
     """ Load Model with weights(if available) """
     G: torch.nn.Module = get_model(arguments.get('generator_model_args')).to(device)
     D: torch.nn.Module = get_model(arguments.get('discriminator_model_args')).to(device)
+
+    if arguments['mode'] == 'dcgan':
+        G.apply(weights_init)
+        D.apply(weights_init)
 
     """ Create optimizer """
     G_optimizer = create_optimizer(G.parameters(), arguments['generator_optimizer_args'])
@@ -120,7 +133,7 @@ def train_gan(arguments):
         D.zero_grad()
 
     batch_size = arguments['train_data_args']['batch_size']
-    z_dim = arguments['generator_model_args']['model_constructor_args']['z_dim']
+    z_dim = arguments['generator_model_args']['model_constructor_args']['nz']
 
     generator = infinite_train_gen(dataset.train_dataloader)
     interval_length = 10 if is_debug_mode() else 400
@@ -147,10 +160,12 @@ def train_gan(arguments):
         for _ in t:
             if arguments['mode'] == 'dcgan':
                 D_loss, G_loss = train_gan_iter(D, D_optimizer, G, G_optimizer,
-                                                loss, device, generator, batch_size, reset_grad, z_dim)
+                                                loss, device, generator, batch_size, reset_grad, z_dim,
+                                                tensorboard_writer, global_step)
             elif arguments['mode'] == 'wgan-wp':
                 D_loss, G_loss = train_wgan_iter(D, D_optimizer, G, G_optimizer, device,
-                                                 generator, batch_size, reset_grad, z_dim)
+                                                 generator, batch_size, reset_grad, z_dim,
+                                                 tensorboard_writer, global_step)
             elif arguments['mode'] == 'wgan-noise-adversarial':
                 D_loss, G_loss = train_noisy_wgan_iter(D, D_optimizer, G, G_optimizer, device,
                                                        generator, batch_size, reset_grad, z_dim,
@@ -181,48 +196,54 @@ def train_gan(arguments):
 
 
 def train_gan_iter(D, D_optimizer, G, G_optimizer,
-                   loss, device, generator, batch_size, reset_grad, z_dim):
-    real_labels = torch.ones(batch_size).to(device)
-    fake_labels = torch.zeros(batch_size).to(device)
+                   loss, device, generator, batch_size, reset_grad, z_dim, tensorboard_writer, global_step):
+    real_label = 1
+    fake_label = 0
 
-    # Train discriminator
-    # Compute BCE_Loss using real images
-    images, _ = next(generator)
-    images = images.to(device)
-    outputs = D(images)
-    D_loss_real = loss(outputs.squeeze(), real_labels)
-
-    # Compute BCE Loss using fake images
-    z = torch.rand((batch_size, z_dim, 1, 1), device=device)
-    fake_images = G(z)
-    outputs = D(fake_images)
-    D_loss_fake = loss(outputs.squeeze(), fake_labels)
-
-    # Optimize discriminator
-    D_loss = D_loss_real + D_loss_fake
+    ############################
+    # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
+    ###########################
+    # train with real
     D.zero_grad()
-    # if D_loss > 0.01:  # Dont make discriminator too strong.
-    D_loss.backward()
+    samples = next(generator)
+    images = samples[0].to(device)
+    batch_size = images.size(0)
+    label = torch.full((batch_size,), real_label, device=device)
+
+    output = D(images)
+    errD_real = loss(output, label)
+    errD_real.backward()
+    D_loss_real = output.mean().item()
+
+    # train with fake
+    noise = torch.randn(batch_size, z_dim, 1, 1, device=device)
+    fake = G(noise)
+    label.fill_(fake_label)
+    output = D(fake.detach())
+    errD_fake = loss(output, label)
+    errD_fake.backward()
+    D_loss = errD_real + errD_fake
     D_optimizer.step()
-    reset_grad()
 
-    # Train generator
-    # Compute loss with fake images
-    z = torch.rand((batch_size, z_dim, 1, 1), device=device)
-    fake_images = G(z)
-    outputs = D(fake_images)
-    G_loss = loss(outputs.squeeze(), real_labels)
-
-    # Optimize generator
+    ############################
+    # (2) Update G network: maximize log(D(G(z)))
+    ###########################
+    G.zero_grad()
+    label.fill_(real_label)  # fake labels are real for generator cost
+    output = D(fake)
+    G_loss = loss(output, label)
     G_loss.backward()
     G_optimizer.step()
+
     reset_grad()
+
+    print(f'{D_loss} / {G_loss}')
     return D_loss, G_loss
 
 
 def train_wgan_iter(D, D_optimizer,
                     G, G_optimizer,
-                    device, generator, mb_size, reset_grad, z_dim, num_critic_iter=5):
+                    device, generator, mb_size, reset_grad, z_dim, tensorboard_writer, global_step, num_critic_iter=10):
     D_loss = 0
     assert num_critic_iter >= 5
     for i in range(num_critic_iter):
@@ -234,8 +255,8 @@ def train_wgan_iter(D, D_optimizer,
 
         # Dicriminator forward-loss-backward-update
         G_sample = G(z)
-        D_real = D(x)
-        D_fake = D(G_sample)
+        D_real, _ = D(x)
+        D_fake, _ = D(G_sample)
 
         D_loss = -(torch.mean(D_real) - torch.mean(D_fake))
 
@@ -251,7 +272,7 @@ def train_wgan_iter(D, D_optimizer,
     # Generator forward-loss-backward-update
     z = torch.randn(mb_size, z_dim, 1, 1).to(device)
     G_sample = G(z)
-    D_fake = D(G_sample)
+    D_fake, _ = D(G_sample)
     G_loss = -torch.mean(D_fake)
     G_loss.backward()
     G_optimizer.step()
@@ -328,7 +349,7 @@ def main():
             z_dim=100,
             inception_metric=dict(
                 evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
-                evaluation_classifier_weights='logs/2019-12-27T13:09:07.398172_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001_weight_decay_0.005/epoch_0034-model-val_accuracy_98.06859806859806.pth',
+                evaluation_classifier_weights='./logs/2020-02-03T14:55:00.666781_train_mode_classification_model_ConvNetSimple_dataset_MNIST_bs_64_name_Adam_lr_0.001/epoch_0037-model-val_accuracy_98.45154845154845.pth',
                 classifier_model_layer=4,
                 evaluation_size=10000,
                 evaluation_classifier_std=(0.5,),
@@ -369,49 +390,68 @@ def main():
         validate_step_size=1,
     )
 
-    generator_model_args = dict(
-        # Use Enums here
-        model_arch_name='models.gan.DCGAN.Generator',
-        model_weights_path=opt.generator_model_path,
-        model_constructor_args=dict(
-            z_dim=dataset_specific_config['z_dim'],
-            channels=dataset_args['name'].value['channels'],
-        )
-    )
-
-    discriminator_model_args = dict(
-        # Use Enums here
-        model_arch_name='models.gan.DCGAN.Discriminator',
-        model_weights_path=opt.generator_model_path.replace('G-', 'D-') if opt.generator_model_path else None,
-        model_constructor_args=dict(
-            channels=dataset_args['name'].value['channels']
-        )
-    )
-
     loss_args = dict(
         name='default'
     )
 
     if opt.mode == 'dcgan':
+        generator_model_args = dict(
+            # Use Enums here
+            model_arch_name='models.gan.DCGAN.DcGanGenerator',
+            model_weights_path=opt.generator_model_path,
+            model_constructor_args=dict(
+                nz=dataset_specific_config['z_dim'],
+                channels=dataset_args['name'].value['channels'],
+            )
+        )
+
+        discriminator_model_args = dict(
+            # Use Enums here
+            model_arch_name='models.gan.DCGAN.DcGanDiscriminator',
+            model_weights_path=opt.generator_model_path.replace('G-', 'D-') if opt.generator_model_path else None,
+            model_constructor_args=dict(
+                channels=dataset_args['name'].value['channels']
+            )
+        )
         generator_optimizer_args = dict(
             name='torch.optim.Adam',
-            lr=5e-5,
+            lr=0.0002,
             betas=(0.5, 0.999)
         )
 
         discriminator_optimizer_args = dict(
-            name='torch.optim.SGD',
-            lr=5e-5
+            name='torch.optim.Adam',
+            lr=0.0002,
+            betas=(0.5, 0.999)
         )
     elif opt.mode in ['wgan-wp', 'wgan-noise-adversarial']:
+        generator_model_args = dict(
+            # Use Enums here
+            model_arch_name='models.gan.DCGAN.Generator',
+            model_weights_path=opt.generator_model_path,
+            model_constructor_args=dict(
+                nz=dataset_specific_config['z_dim'],
+                channels=dataset_args['name'].value['channels'],
+            )
+        )
+
+        discriminator_model_args = dict(
+            # Use Enums here
+            model_arch_name='models.gan.DCGAN.Discriminator',
+            model_weights_path=opt.generator_model_path.replace('G-', 'D-') if opt.generator_model_path else None,
+            model_constructor_args=dict(
+                channels=dataset_args['name'].value['channels']
+            )
+        )
+
         generator_optimizer_args = dict(
             name='torch.optim.RMSprop',
-            lr=0.00005
+            lr=0.0002
         )
 
         discriminator_optimizer_args = dict(
             name='torch.optim.RMSprop',
-            lr=0.00005
+            lr=0.0002
         )
 
     dataset_inception_metric = dataset_specific_config['inception_metric']
