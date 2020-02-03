@@ -77,4 +77,4 @@ class Discriminator(torch.nn.Module):
     def feature_extraction(self, x):
         # Use discriminator for feature extraction then flatten to vector of 16384 features
         x = self.main_module(x)
-        return x.view(-1, 1024*28*28)
+        return x.view(-1, 1024*4*4)
