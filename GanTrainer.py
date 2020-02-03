@@ -243,7 +243,7 @@ def train_wgan_iter(D, D_optimizer,
 def main():
     dataset_specific_configs = dict(
         ISIC=dict(
-            training_batch_size=8,
+            training_batch_size=64,
             z_dim=100,
             evaluation_size=100,
             evaluation_classifier_std=(0.5, 0.5, 0.5),
