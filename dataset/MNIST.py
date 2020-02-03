@@ -82,7 +82,7 @@ class MNIST(BaseDataset):
                                                   download=True,
                                                   transform=self.normalize_transform)
 
-        if dataset_args['contamination_args']:
+        if dataset_args.get('contamination_args'):
             self.trainset = GaussianContaminationDataset(self.trainset, dataset_args['contamination_args'])
 
     def debug(self):

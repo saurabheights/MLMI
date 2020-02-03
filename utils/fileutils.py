@@ -18,7 +18,8 @@ def get_result_directory_name(timestamp,
                               optimizer_args: dict,
                               discriminator_optimizer_args: dict,
                               generator_optimizer_args: dict,
-                              dataset_args: dict):
+                              dataset_args: dict,
+                              contamination_loss_weight=1.0):
     # Model and Dataset first
     dirname = f'{timestamp}_mode_{mode}'
     if mode == 'classification':
@@ -42,6 +43,11 @@ def get_result_directory_name(timestamp,
             dirname += '_D'
             for key, value in discriminator_optimizer_args.items():
                 dirname += f'_{key}_{filter_optimizer_keys(value)}'
+
+    if dataset_args.get('contamination_args'):
+        contamination_args = dataset_args['contamination_args']
+        dirname += f'_contaminated_dataset_{contamination_args["contamination_percentage"]}'
+        dirname += f'_lambda_{contamination_loss_weight}'
 
     return dirname
 
@@ -78,7 +84,8 @@ def make_results_dir(arguments):
                                         optimizer_args=optimizer_args,
                                         generator_optimizer_args=generator_optimizer_args,
                                         discriminator_optimizer_args=discriminator_optimizer_args,
-                                        dataset_args=arguments['dataset_args'])
+                                        dataset_args=arguments['dataset_args'],
+                                        contamination_loss_weight=arguments.get('contamination_loss_weight'))
 
     outdir = os.path.join(outdir, dirname)
     os.makedirs(outdir, exist_ok=True)

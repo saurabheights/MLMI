@@ -254,11 +254,6 @@ def main():
         MNIST=dict(
             training_batch_size=64,
             z_dim=100,
-            contamination_args=dict(
-                noise_mean = 0.0,
-                noise_std = opt.contamination_std,
-                contamination_percentage = opt.contamination_percentage
-            ),
             inception_metric=dict(
                 evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
                 evaluation_classifier_weights='logs/2019-12-27T13:09:07.398172_mode_classification_model_ConvNetSimple_dataset_MNIST_subset_1.0_bs_64_name_Adam_lr_0.001_weight_decay_0.005/epoch_0034-model-val_accuracy_98.06859806859806.pth',
@@ -285,7 +280,9 @@ def main():
         name=MAP_DATASET_TO_ENUM[opt.dataset],
         mean=(0.5,),
         std=(0.5,),
-        contamination_args=dataset_specific_config['contamination_args'] if opt.enable_contamination else None
+        contamination_args=dict(noise_mean = 0.0,
+                                noise_std = opt.contamination_std,
+                                contamination_percentage = opt.contamination_percentage) if opt.enable_contamination else None
     )
 
     train_data_args = dict(
