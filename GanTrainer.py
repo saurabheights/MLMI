@@ -48,6 +48,8 @@ parser.add_argument('--contamination_loss_weight', type=float, default=1.0, help
 
 opt = parser.parse_args()
 
+import torch.backends.cudnn as cudnn
+cudnn.benchmark = True
 
 def infinite_train_gen(dataloader):
     def f():
