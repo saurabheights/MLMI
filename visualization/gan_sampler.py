@@ -45,7 +45,8 @@ class GanSampler(Callbacks):
         with torch.no_grad():
             images = generator(noise).detach()
             images = images.cpu()
-            images = images.reshape(-1, 1, 32, 32)
+            images = images.reshape(-1, 3, 64, 64)
+            import pdb;pdb.set_trace()
             images = images.mul(0.5).add(0.5)
             image = torchvision.utils.make_grid(images, nrow=4)  # ToDo Remove hardcoded value
 
