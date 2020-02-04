@@ -1,7 +1,9 @@
 import math
 from pprint import pprint
+from random import random
 
 import numpy
+import skimage
 import torch
 import torchvision
 import csv
@@ -11,7 +13,7 @@ from dataset.BaseDataset import BaseDataset
 import shutil
 
 from torch.utils.data import Dataset
-
+import random
 from utils import logger
 import numpy as np
 
@@ -158,10 +160,11 @@ class NoiseAdderDataset(Dataset):
 
 
     def set_noise(self, img,id):
-        if id%self.interval==0:
-            noise=np.random.normal(loc=self.mean, scale=self.std, size=img.shape)
-            import pdb;pdb.set_trace()
-            img+=torch.tensor(img).float()
+        if random.uniform(0, 1) < 0.2:
+            img = skimage.util.random_noise(img,  # Adds noise, not rerturns noise.
+                                          mode='gaussian',
+                                          var=0.25**2)
+            img = torch.from_numpy(img).type(torch.FloatTensor)
             flag=True
         else:
             flag=False
