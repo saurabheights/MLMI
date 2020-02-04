@@ -27,7 +27,7 @@ from utils.tensorboard_writer import initialize_tensorboard, close_tensorboard
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epoch', type=int, default=50,
                     help='Number of epochs for training. Default 50.')
-parser.add_argument('--dataset', type=str, default='CELEBA', choices=['CIFAR10', 'MNIST', 'CELEBA'],
+parser.add_argument('--dataset', type=str, default='ISIC', choices=['CIFAR10', 'MNIST', 'CELEBA', 'ISIC'],
                     help='Required - The dataset to choose')
 
 # Data Inflation Study, allows training on smaller subset of selected Dataset
@@ -63,7 +63,7 @@ def objective(arguments):
     np.random.seed(arguments['random_seed'])  # Set for numpy
 
     """ Set device - cpu or gpu """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     logger.info(f'Using device - {device}')
 
     """ Load Model with weights(if available) """
@@ -203,6 +203,11 @@ def main():
         CELEBA=dict(
             training_batch_size=64,
         ),
+        ISIC = dict(
+            training_batch_size=64,
+            mean=(0.5, ),
+            std=(0.5, )
+        )
     )
 
     assert opt.dataset in dataset_specific_configs.keys()
@@ -243,7 +248,8 @@ def main():
 
     optimizer_args = dict(
         name='torch.optim.Adam',
-        lr=1e-3
+        # lr=1e-3
+        lr=1e-5
     )
 
     callbacks_args = []
@@ -257,7 +263,8 @@ def main():
         optimizer_args=optimizer_args,
         callbacks_args=callbacks_args,
         outdir=opt.output_dir,
-        nb_epochs=opt.num_epoch,
+        # nb_epochs=opt.num_epoch,
+        nb_epochs=12,
         random_seed=dataset_specific_config.get('random_seed', 42),
         mode='classification'
     )

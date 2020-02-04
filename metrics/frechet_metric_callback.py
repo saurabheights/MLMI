@@ -129,7 +129,7 @@ class FrechetInceptionScoreCallback(Callbacks):
             self.classifier.eval()
             real_activations = []
             for images, labels in tqdm(self.dataset.test_dataloader):
-                images = images.repeat(1, 3, 1, 1)
+                # images = images.repeat(1, 3, 1, 1)
                 activation = self.classifier(images.to(self.device))
                 activation = activation[0].squeeze().detach().cpu().numpy()
                 real_activations.append(activation)
@@ -146,7 +146,7 @@ class FrechetInceptionScoreCallback(Callbacks):
         for _ in trange(num_batch):
             noise = torch.randn(self.batch_size, generator.z_dim, 1, 1, device=self.device)
             images = generator(noise).detach()
-            images = images.repeat(1, 3, 1, 1)
+            # images = images.repeat(1, 3, 1, 1)
             activation = self.classifier(self.transform(images).to(self.device))
             activation = activation[0].squeeze().detach().cpu().numpy()
             fake_activations.append(activation)

@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp'],
                     help='Optional - To train dcgan or wgan. Default value dcgan.')
 
-parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR10', 'CELEBA'],
+parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR10', 'CELEBA', 'ISIC'],
                     help='Optional - The dataset to choose')
 
 # Data Inflation Study, allows training on smaller subset of selected Dataset
@@ -93,7 +93,7 @@ def eval_gan(arguments):
 def main():
     dataset_specific_configs = dict(
         MNIST=dict(
-            training_batch_size=64,
+            training_batch_size=8,
             z_dim=100,
             inception_metric=dict(
                 evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',

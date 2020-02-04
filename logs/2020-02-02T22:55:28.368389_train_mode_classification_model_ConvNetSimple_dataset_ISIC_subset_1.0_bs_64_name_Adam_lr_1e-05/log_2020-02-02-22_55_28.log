@@ -1,0 +1,64 @@
+2020-02-02 22:55:28,407 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():54                | Arguments:
+{'callbacks_args': [],
+ 'dataset_args': {'name': <SupportedDataset.ISIC_Enum: {'dataloader': <class 'dataset.ISIC.ISIC'>, 'image_size': (64, 64), 'channels': 3, 'training_size': 8000, 'labels_count': 7}>,
+                  'training_subset_percentage': 1.0},
+ 'loss_args': {'name': 'torch.nn.CrossEntropyLoss'},
+ 'mode': 'classification',
+ 'model_args': {'model_arch_name': 'models.classification.ConvNetSimple.ConvNetSimple',
+                'model_constructor_args': {'input_size': (64, 64),
+                                           'number_of_classes': 7,
+                                           'number_of_input_channels': 3},
+                'model_weights_path': None},
+ 'nb_epochs': 40,
+ 'optimizer_args': {'lr': 1e-05, 'name': 'torch.optim.Adam'},
+ 'outdir': './logs/',
+ 'random_seed': 42,
+ 'train_data_args': {'batch_size': 64, 'shuffle': True, 'to_train': True},
+ 'val_data_args': {'batch_size': 256,
+                   'shuffle': False,
+                   'validate_step_size': 1}}
+2020-02-02 22:55:28,407 |     MainProcess | MainThread | INFO  | tensorboard_writer.py::initialize_tensorboard():67 | Initializing Tensorboard Writer in ./logs/2020-02-02T22:55:28.368389_train_mode_classification_model_ConvNetSimple_dataset_ISIC_subset_1.0_bs_64_name_Adam_lr_1e-05
+2020-02-02 22:55:29,062 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():60                | Using Random Seed value as: 42
+2020-02-02 22:55:29,070 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():67                | Using device - cuda:1
+2020-02-02 22:55:48,431 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 1.1 %%
+2020-02-02 22:56:00,736 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 1.3 %%
+2020-02-02 22:56:12,958 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 51.1 %%
+2020-02-02 22:56:25,083 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:56:37,303 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:56:49,750 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:57:02,153 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:57:14,504 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:57:26,867 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:57:39,161 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:57:51,542 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:58:03,772 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:58:16,010 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:58:28,392 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:58:40,708 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:58:52,913 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:59:05,172 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:59:17,756 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:59:29,898 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:59:42,112 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 22:59:54,494 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:00:06,921 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:00:19,528 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:00:31,734 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:00:44,185 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:00:56,475 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:01:08,822 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:01:21,036 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:01:33,250 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:01:45,689 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:01:58,046 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:02:10,425 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:02:22,724 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:02:35,093 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:02:47,426 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:02:59,757 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:03:12,175 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:03:24,361 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:03:36,764 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:03:49,067 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():169               | Accuracy of the network on the 1000 validation images: 67.0 %%
+2020-02-02 23:03:49,067 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():187               | Finished Training
+2020-02-02 23:03:49,068 |     MainProcess | MainThread | INFO  | train_classifier.py::objective():189               | Max Validation accuracy is 67.0

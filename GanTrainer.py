@@ -24,10 +24,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp', 'wgan-noise-adversarial'],
                     help='Optional - To train dcgan or wgan or wgan with noise removal. Default value dcgan.')
 
-parser.add_argument('--num_iterations', type=int, default=10000,
+parser.add_argument('--num_iterations', type=int, default=50000,
                     help='Optional - Number of iterations for training gan. Default value 10000.')
 
-parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR10', 'CELEBA'],
+parser.add_argument('--dataset', type=str, default='ISIC', choices=['MNIST', 'CIFAR10', 'CELEBA', 'ISIC'],
                     help='Optional - The dataset to choose')
 
 parser.add_argument('--generator_model_path', type=str, required=False, default=None,
@@ -101,7 +101,7 @@ def train_gan(arguments):
     D_optimizer = create_optimizer(D.parameters(), arguments['discriminator_optimizer_args'])
 
     """ Create Loss """
-    loss = torch.nn.BCELoss().to(device=device)  # GAN
+    loss = torch.nn.BCEWithLogitsLoss().to(device=device)  # GAN
 
     """ Load parameters for the Dataset """
     dataset: BaseDataset = create_dataset(arguments['dataset_args'],
@@ -344,12 +344,13 @@ def train_noisy_wgan_iter(D, D_optimizer,
 
 def main():
     dataset_specific_configs = dict(
-        MNIST=dict(
+        ISIC=dict(
             training_batch_size=64,
             z_dim=100,
             inception_metric=dict(
                 evaluation_arch_name='models.classification.ConvNetSimple.ConvNetSimple',
-                evaluation_classifier_weights='./logs/2020-02-03T14:55:00.666781_train_mode_classification_model_ConvNetSimple_dataset_MNIST_bs_64_name_Adam_lr_0.001/epoch_0037-model-val_accuracy_98.45154845154845.pth',
+                # evaluation_classifier_weights='./logs/2020-02-03T14:55:00.666781_train_mode_classification_model_ConvNetSimple_dataset_MNIST_bs_64_name_Adam_lr_0.001/epoch_0037-model-val_accuracy_98.45154845154845.pth',
+                evaluation_classifier_weights='logs/2020-02-02T22:55:28.368389_train_mode_classification_model_ConvNetSimple_dataset_ISIC_subset_1.0_bs_64_name_Adam_lr_1e-05/epoch_0003-model-val_accuracy_67.0.pth',
                 classifier_model_layer=4,
                 evaluation_size=10000,
                 evaluation_classifier_std=(0.5,),
@@ -366,7 +367,7 @@ def main():
         )
     )
 
-    assert opt.dataset in dataset_specific_configs.keys()
+    #assert opt.dataset in dataset_specific_configs.keys()
     dataset_specific_config = dataset_specific_configs[opt.dataset]
 
     dataset_args = dict(
