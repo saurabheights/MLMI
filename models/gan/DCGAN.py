@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 
+def normal_init(m, mean, std):
+    if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
+        m.weight.data.normal_(mean, std)
+        m.bias.data.zero_()
 
 class Generator(torch.nn.Module):
     def __init__(self, z_dim, channels):
@@ -39,6 +43,10 @@ class Generator(torch.nn.Module):
         x = self.main_module(x)
         return self.output(x)
 
+    def weight_init(self, mean, std):
+        for m in self._modules:
+            normal_init(self._modules[m], mean, std)
+
 
 class Discriminator(torch.nn.Module):
     def __init__(self, channels):
@@ -49,7 +57,7 @@ class Discriminator(torch.nn.Module):
         self.main_module = nn.Sequential(
             # Image (Cx32x32)
             nn.Conv2d(in_channels=channels, out_channels=128, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=128),
+            # nn.BatchNorm2d(num_features=128),
             nn.LeakyReLU(0.2, inplace=True),
 
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4, stride=2, padding=1),
@@ -76,6 +84,10 @@ class Discriminator(torch.nn.Module):
         # import pdb;pdb.set_trace()
         input = self.main_module(x)
         return self.output(input)
+
+    def weight_init(self, mean, std):
+        for m in self._modules:
+            normal_init(self._modules[m], mean, std)
 
     def feature_extraction(self, x):
         # Use discriminator for feature extraction then flatten to vector of 16384 features

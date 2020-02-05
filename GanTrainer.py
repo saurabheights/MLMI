@@ -6,6 +6,7 @@ from typing import List
 
 import numpy as np
 import torch.utils.data
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from tqdm import trange
 
 from callbacks.callback_utils import generate_callbacks, run_callbacks
@@ -50,6 +51,7 @@ def infinite_train_gen(dataloader):
     def f():
         while True:
             for images, targets in dataloader:
+                # import pdb;pdb.set_trace()
                 yield images, targets
 
     return f()
@@ -77,7 +79,8 @@ def train_gan(arguments):
     """ Load Model with weights(if available) """
     G: torch.nn.Module = get_model(arguments.get('generator_model_args')).to(device)
     D: torch.nn.Module = get_model(arguments.get('discriminator_model_args')).to(device)
-
+    G.weight_init(mean=0.0, std=0.02)
+    D.weight_init(mean=0.0, std=0.02)
     """ Create optimizer """
     G_optimizer = create_optimizer(G.parameters(), arguments['generator_optimizer_args'])
     D_optimizer = create_optimizer(D.parameters(), arguments['discriminator_optimizer_args'])
@@ -122,6 +125,8 @@ def train_gan(arguments):
     num_intervals = 1 if is_debug_mode() else int(arguments['num_iterations'] / interval_length)
 
     global_step = 0
+    g_scheduler = ReduceLROnPlateau(G_optimizer, 'min', cooldown=5)
+    d_scheduler = ReduceLROnPlateau(D_optimizer, 'min', cooldown=5)
     for it in range(num_intervals):
 
         logger.info(f'Interval {it + 1}/{num_intervals}')
@@ -139,6 +144,8 @@ def train_gan(arguments):
                 D_loss, G_loss = train_wgan_iter(D, D_optimizer, G, G_optimizer, device,
                                                  generator, batch_size, reset_grad, z_dim)
 
+            d_scheduler.step(D_loss)
+            g_scheduler.step(G_loss)
             # Log D_Loss and G_Loss in progress_bar
             t.set_postfix(D_Loss=D_loss.data.cpu().item(),
                           G_Loss=G_loss.data.cpu().item())
@@ -244,7 +251,7 @@ def train_wgan_iter(D, D_optimizer,
 def main():
     dataset_specific_configs = dict(
         ISIC=dict(
-            training_batch_size=64,
+            training_batch_size=4,
             z_dim=100,
             evaluation_size=100,
             evaluation_classifier_std=(0.5, 0.5, 0.5),
@@ -322,8 +329,9 @@ def main():
         )
 
         discriminator_optimizer_args = dict(
-            name='torch.optim.SGD',
-            lr=0.0002
+            name='torch.optim.Adam',
+            lr=0.0002,
+            betas=(0.5, 0.999)
         )
     elif opt.mode == 'wgan-wp':
         generator_optimizer_args = dict(
