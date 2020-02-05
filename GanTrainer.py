@@ -22,7 +22,7 @@ from utils.tensorboard_writer import initialize_tensorboard
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp'],
+parser.add_argument('--mode', type=str, default='wgan-wp', choices=['dcgan', 'wgan-wp'],
                     help='Optional - To train dcgan or wgan. Default value dcgan.')
 
 parser.add_argument('--num_iterations', type=int, default=50000,
@@ -86,7 +86,7 @@ def train_gan(arguments):
     D_optimizer = create_optimizer(D.parameters(), arguments['discriminator_optimizer_args'])
 
     """ Create Loss """
-    loss = torch.nn.BCEWithLogitsLoss().to(device=device)  # GAN
+    loss = torch.nn.BCELoss().to(device=device)  # GAN
 
     """ Load parameters for the Dataset """
     dataset: BaseDataset = create_dataset(arguments['dataset_args'],
