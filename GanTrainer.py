@@ -200,7 +200,8 @@ def train_gan_iter(D, D_optimizer, G, G_optimizer,
     z = torch.rand((batch_size, z_dim, 1, 1), device=device)
     fake_images = G(z)
     outputs = D(fake_images)
-    G_loss = loss(outputs.squeeze(), real_labels)
+    l2 = torch.nn.MSELoss()
+    G_loss = loss(outputs.squeeze(), real_labels) + 1e-3 * l2(images, fake_images)
 
     # Optimize generator
     G_loss.backward()
