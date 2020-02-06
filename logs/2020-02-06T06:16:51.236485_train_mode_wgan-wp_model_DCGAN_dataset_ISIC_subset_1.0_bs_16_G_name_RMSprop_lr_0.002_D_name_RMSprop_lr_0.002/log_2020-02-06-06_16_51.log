@@ -1,0 +1,189 @@
+2020-02-06 06:16:51,282 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():64                      | Arguments:
+{'callbacks_args': [{'InceptionMetric': {'classifier_model_args': {'model_arch_name': 'models.classification.ConvNetSimple.ConvNetSimple',
+                                                                   'model_constructor_args': {'input_size': (64,
+                                                                                                             64),
+                                                                                              'number_of_classes': 7,
+                                                                                              'number_of_input_channels': 3},
+                                                                   'model_weights_path': 'logs/2020-02-02T22:55:28.368389_train_mode_classification_model_ConvNetSimple_dataset_ISIC_subset_1.0_bs_64_name_Adam_lr_1e-05/epoch_0003-model-val_accuracy_67.0.pth'},
+                                         'mode': 'gan',
+                                         'sample_size': 16,
+                                         'total_samples': 10000,
+                                         'transform': {'mean': (0.5,),
+                                                       'std': (0.5,)}}},
+                    {'FrechetMetric': {'classifier_model_args': {'model_arch_name': 'models.evaluation.inception.InceptionV3',
+                                                                 'model_constructor_args': {},
+                                                                 'model_weights_path': None},
+                                       'classifier_model_layer': None,
+                                       'sample_size': 16,
+                                       'total_samples': 10000,
+                                       'transform': {'mean': (0.5, 0.5, 0.5),
+                                                     'std': (0.5, 0.5, 0.5)}}},
+                    {'GanSampler': {'num_samples': 16,
+                                    'write_to_disk': True,
+                                    'write_to_tensorboard': True}}],
+ 'dataset_args': {'mean': (0.5,),
+                  'name': <SupportedDataset.ISIC_Enum: {'dataloader': <class 'dataset.ISIC.ISIC'>, 'image_size': (64, 64), 'channels': 3, 'training_size': 8000, 'labels_count': 7}>,
+                  'std': (0.5,),
+                  'training_subset_percentage': 1.0},
+ 'discriminator_model_args': {'model_arch_name': 'models.gan.DCGAN.Discriminator',
+                              'model_constructor_args': {'channels': 3},
+                              'model_weights_path': None},
+ 'discriminator_optimizer_args': {'lr': 0.002, 'name': 'torch.optim.RMSprop'},
+ 'generator_model_args': {'model_arch_name': 'models.gan.DCGAN.Generator',
+                          'model_constructor_args': {'channels': 3,
+                                                     'z_dim': 100},
+                          'model_weights_path': None},
+ 'generator_optimizer_args': {'lr': 0.002, 'name': 'torch.optim.RMSprop'},
+ 'loss_args': {'name': 'default'},
+ 'mode': 'wgan-wp',
+ 'num_iterations': 50000,
+ 'outdir': './logs/',
+ 'random_seed': 82,
+ 'train_data_args': {'batch_size': 16, 'shuffle': True, 'to_train': True},
+ 'val_data_args': {'batch_size': 64, 'shuffle': False, 'validate_step_size': 1}}
+2020-02-06 06:16:51,282 |     MainProcess | MainThread | INFO  | tensorboard_writer.py::initialize_tensorboard():67 | Initializing Tensorboard Writer in ./logs/2020-02-06T06:16:51.236485_train_mode_wgan-wp_model_DCGAN_dataset_ISIC_subset_1.0_bs_16_G_name_RMSprop_lr_0.002_D_name_RMSprop_lr_0.002
+2020-02-06 06:16:52,089 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():70                      | Using Random Seed value as: 82
+2020-02-06 06:16:52,103 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():77                      | Using device - cuda:0
+2020-02-06 06:17:03,557 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():113                     | Generator(
+  (main_module): Sequential(
+    (0): ConvTranspose2d(100, 1024, kernel_size=(4, 4), stride=(1, 1))
+    (1): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU(inplace=True)
+    (3): ConvTranspose2d(1024, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (4): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (5): ReLU(inplace=True)
+    (6): ConvTranspose2d(512, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (7): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (8): ReLU(inplace=True)
+    (9): ConvTranspose2d(256, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (10): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (11): ReLU(inplace=True)
+    (12): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  )
+  (output): Tanh()
+)
+2020-02-06 06:17:03,557 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():114                     | Discriminator(
+  (main_module): Sequential(
+    (0): Conv2d(3, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (1): LeakyReLU(negative_slope=0.2, inplace=True)
+    (2): Conv2d(128, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (4): LeakyReLU(negative_slope=0.2, inplace=True)
+    (5): Conv2d(256, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (6): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (7): LeakyReLU(negative_slope=0.2, inplace=True)
+    (8): Conv2d(512, 1024, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    (9): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (10): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (output): Sequential(
+    (0): Conv2d(1024, 1, kernel_size=(4, 4), stride=(1, 1))
+  )
+)
+2020-02-06 06:17:03,558 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 1/125
+2020-02-06 06:21:56,545 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 400 is 1.0351601839065552
+2020-02-06 06:23:18,787 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 400 is 447.5531807511885
+2020-02-06 06:23:19,130 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 2/125
+2020-02-06 06:27:56,692 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 800 is 1.0357939004898071
+2020-02-06 06:29:14,623 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 800 is 448.26422714489877
+2020-02-06 06:29:14,891 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 3/125
+2020-02-06 06:34:06,481 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 1200 is 1.0343239307403564
+2020-02-06 06:35:22,861 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 1200 is 449.1654487438677
+2020-02-06 06:35:23,068 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 4/125
+2020-02-06 06:40:13,963 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 1600 is 1.0330634117126465
+2020-02-06 06:41:30,459 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 1600 is 454.03124706566666
+2020-02-06 06:41:30,835 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 5/125
+2020-02-06 06:46:12,187 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 2000 is 1.0358386039733887
+2020-02-06 06:47:25,421 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 2000 is 446.5058057670881
+2020-02-06 06:47:25,881 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 6/125
+2020-02-06 06:52:17,817 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 2400 is 1.0338611602783203
+2020-02-06 06:53:34,437 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 2400 is 450.96540722778224
+2020-02-06 06:53:34,716 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 7/125
+2020-02-06 06:58:25,857 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 2800 is 1.0358803272247314
+2020-02-06 06:59:41,100 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 2800 is 447.2441796728997
+2020-02-06 06:59:41,338 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 8/125
+2020-02-06 07:04:21,978 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 3200 is 1.0349587202072144
+2020-02-06 07:05:38,406 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 3200 is 448.674629230806
+2020-02-06 07:05:38,617 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 9/125
+2020-02-06 07:10:28,618 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 3600 is 1.034888505935669
+2020-02-06 07:11:45,202 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 3600 is 448.1670444131951
+2020-02-06 07:11:45,431 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 10/125
+2020-02-06 07:16:37,699 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 4000 is 1.0344138145446777
+2020-02-06 07:17:54,704 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 4000 is 450.95381404589875
+2020-02-06 07:17:54,946 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 11/125
+2020-02-06 07:22:36,118 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 4400 is 1.0341869592666626
+2020-02-06 07:23:52,657 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 4400 is 452.2548765841476
+2020-02-06 07:23:52,879 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 12/125
+2020-02-06 07:28:42,987 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 4800 is 1.0352157354354858
+2020-02-06 07:29:58,581 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 4800 is 449.8515268863545
+2020-02-06 07:29:58,824 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 13/125
+2020-02-06 07:34:51,074 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 5200 is 1.0327295064926147
+2020-02-06 07:36:11,480 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 5200 is 454.84383936450354
+2020-02-06 07:36:11,728 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 14/125
+2020-02-06 07:40:49,669 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 5600 is 1.035702109336853
+2020-02-06 07:42:10,094 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 5600 is 447.2478946939499
+2020-02-06 07:42:10,313 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 15/125
+2020-02-06 07:46:53,424 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 6000 is 1.0338826179504395
+2020-02-06 07:48:12,564 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 6000 is 452.42803974980114
+2020-02-06 07:48:12,802 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 16/125
+2020-02-06 07:52:56,172 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 6400 is 1.0319149494171143
+2020-02-06 07:54:15,351 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 6400 is 454.1991873128594
+2020-02-06 07:54:15,614 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 17/125
+2020-02-06 07:58:51,385 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 6800 is 1.0348962545394897
+2020-02-06 08:00:07,860 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 6800 is 449.4385779775871
+2020-02-06 08:00:08,085 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 18/125
+2020-02-06 08:04:51,256 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 7200 is 1.0349111557006836
+2020-02-06 08:06:09,096 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 7200 is 449.1819845394368
+2020-02-06 08:06:09,334 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 19/125
+2020-02-06 08:10:54,264 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 7600 is 1.0316226482391357
+2020-02-06 08:12:11,013 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 7600 is 455.24201709631535
+2020-02-06 08:12:11,265 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 20/125
+2020-02-06 08:16:47,540 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 8000 is 1.0333621501922607
+2020-02-06 08:18:06,733 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 8000 is 449.8686166356171
+2020-02-06 08:18:06,949 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 21/125
+2020-02-06 08:22:52,157 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 8400 is 1.0337843894958496
+2020-02-06 08:24:10,371 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 8400 is 451.6116258242357
+2020-02-06 08:24:10,625 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 22/125
+2020-02-06 08:28:56,606 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 8800 is 1.0350877046585083
+2020-02-06 08:30:14,908 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 8800 is 447.744675199668
+2020-02-06 08:30:15,248 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 23/125
+2020-02-06 08:34:52,735 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 9200 is 1.0341557264328003
+2020-02-06 08:36:09,943 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 9200 is 450.2751878828575
+2020-02-06 08:36:10,178 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 24/125
+2020-02-06 08:40:55,863 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 9600 is 1.0337260961532593
+2020-02-06 08:42:12,883 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 9600 is 451.87802629557757
+2020-02-06 08:42:13,118 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 25/125
+2020-02-06 08:46:56,191 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 10000 is 1.0327106714248657
+2020-02-06 08:48:12,947 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 10000 is 453.5568220211079
+2020-02-06 08:48:13,159 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 26/125
+2020-02-06 08:52:48,395 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 10400 is 1.03531014919281
+2020-02-06 08:54:04,203 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 10400 is 449.6182334665951
+2020-02-06 08:54:04,443 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 27/125
+2020-02-06 08:58:50,349 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 10800 is 1.0335084199905396
+2020-02-06 09:00:05,855 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 10800 is 449.1827065400931
+2020-02-06 09:00:06,067 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 28/125
+2020-02-06 09:04:51,980 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 11200 is 1.0348703861236572
+2020-02-06 09:06:11,587 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 11200 is 447.8680262198413
+2020-02-06 09:06:11,819 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 29/125
+2020-02-06 09:10:46,568 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 11600 is 1.0342189073562622
+2020-02-06 09:12:08,770 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 11600 is 450.6800791093364
+2020-02-06 09:12:09,010 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 30/125
+2020-02-06 09:16:54,573 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 12000 is 1.0340086221694946
+2020-02-06 09:18:13,212 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 12000 is 448.8458305388085
+2020-02-06 09:18:13,448 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 31/125
+2020-02-06 09:22:56,421 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 12400 is 1.0343717336654663
+2020-02-06 09:24:12,333 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 12400 is 447.932300681613
+2020-02-06 09:24:12,563 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 32/125
+2020-02-06 09:28:48,477 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 12800 is 1.0339127779006958
+2020-02-06 09:30:04,308 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 12800 is 450.267031222261
+2020-02-06 09:30:04,514 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 33/125
+2020-02-06 09:34:48,328 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 13200 is 1.0353516340255737
+2020-02-06 09:36:04,416 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 13200 is 447.81829750658073
+2020-02-06 09:36:04,828 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 34/125
+2020-02-06 09:40:49,703 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 13600 is 1.034116268157959
+2020-02-06 09:42:05,504 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 13600 is 449.20151410822547
+2020-02-06 09:42:05,732 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 35/125
+2020-02-06 09:46:40,344 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 14000 is 1.032835841178894
+2020-02-06 09:47:58,871 |     MainProcess | MainThread | INFO  | frechet_metric_callback.py::on_nth_iteration():63  | Frechet score at iteration 14000 is 450.9937489519317
+2020-02-06 09:47:59,096 |     MainProcess | MainThread | INFO  | GanTrainer.py::train_gan():132                     | Interval 36/125
+2020-02-06 09:52:42,939 |     MainProcess | MainThread | INFO  | inception_metric_callback.py::on_nth_iteration():58 | Inception score at iteration 14400 is 1.0363351106643677
