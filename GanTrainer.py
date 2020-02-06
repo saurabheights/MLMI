@@ -22,7 +22,7 @@ from utils.tensorboard_writer import initialize_tensorboard
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--mode', type=str, default='dcgan', choices=['dcgan', 'wgan-wp'],
+parser.add_argument('--mode', type=str, default='wgan-wp', choices=['dcgan', 'wgan-wp'],
                     help='Optional - To train dcgan or wgan. Default value dcgan.')
 
 parser.add_argument('--num_iterations', type=int, default=50000,
@@ -251,7 +251,7 @@ def train_wgan_iter(D, D_optimizer,
 def main():
     dataset_specific_configs = dict(
         ISIC=dict(
-            training_batch_size=4,
+            training_batch_size=64,
             z_dim=100,
             evaluation_size=100,
             evaluation_classifier_std=(0.5, 0.5, 0.5),
